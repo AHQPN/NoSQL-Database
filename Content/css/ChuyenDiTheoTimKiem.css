@@ -1,0 +1,114 @@
+
+
+.ticket-container {
+    max-width: 800px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    margin: 20px auto;
+}
+.time-section {
+    
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.time, .duration, .station-info {
+    font-size: 1rem;
+    font-weight: 500;
+}
+.station-info {
+    color: #6c757d;
+}
+.icon {
+    font-size: 1.25rem;
+    color: #28a745;
+}
+
+.direction{
+    border-top: 1px solid #28a745;
+}
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-weight: 500;
+}
+.price {
+    color: #ff5722;
+    font-size: 1.25rem;
+}
+.btn-select {
+    background-color: #ffebee;
+    color: #ff5722;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.btn-select:hover {
+    background-color: #ffccbc;
+}
+
+
+
+/*lọc tìm kiếm*/
+
+
+.filter-container {
+    max-height: 400px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #fff;
+    margin: 20px 20px 10px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.filter-container input,.filter-container select{
+    cursor: pointer;
+}
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+.filter-header .clear-filter {
+    color: #ff5722;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.section-title {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+.btn-filter {
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 5px 15px;
+    margin: 5px 5px 5px 0;
+    background-color: #f8f9fa;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.btn-filter:hover {
+    background-color: #e0e0e0;
+}
+
+@media (max-width: 768px){
+    .filter-container{
+        margin: 20px auto;
+    }
+    .ticket-search-container{
+        display:none;
+    }
+    header{
+        margin-bottom:3%;
+    }
+}

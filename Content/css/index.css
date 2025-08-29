@@ -1,0 +1,305 @@
+
+header {
+    background-color: #f97019;
+    position: relative;
+    height: 200px;
+    margin-bottom: 12%;
+}
+
+.nav-link:hover{
+    font-weight: bold;
+}
+
+.banner {
+    position: absolute;
+    left: 50%;
+    top: 70%;
+    transform:translateX(-50%);
+    border-radius: 10px;
+
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 3px 6px rgba(0, 0, 0, .2);
+
+}
+
+.banner img {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+/* Container styling */
+.ticket-search-container {
+    width: 80%;
+    padding: 20px;
+    border: 1px solid #ff6f47;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+
+    flex-wrap: wrap;
+    
+    
+}
+
+/* Trip type styling */
+.trip-type {
+    display: flex;
+    gap: 20px;
+    font-size: 1rem;
+}
+
+.trip-type label {
+    color: #ff6f47;
+    cursor: pointer;
+}
+
+/* Form group styling */
+.form-group {
+    flex: 1 1 45%;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.info-ticket{
+    cursor:pointer;
+}
+
+
+.custom-select {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+    height: 37.6px;
+}
+
+.selected {
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    border: 1px solid #ced4da;
+    height: 100%;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 150px; 
+    overflow-y: auto; 
+    background-color: white;
+    border: 1px solid #ced4da;
+    display: none;
+    z-index: 1;
+    list-style: none;
+}
+
+/* Hiển thị danh sách các tùy chọn khi có lớp 'show' */
+.options.show {
+    display: block;
+}
+
+.options li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.options li:hover {
+    background-color: #e9ecef;
+}
+
+
+
+
+
+/* Search button styling */
+.search-btn {
+    background-color: #ff6f47;
+    color: white;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1 1 100%;
+    transition: background-color 0.3s ease;
+
+    max-width: 200px;
+}
+
+.search-btn:hover {
+    background-color: #e65a32;
+}
+
+
+/*trip list styling*/
+.trip-list{
+    position: relative;
+}
+.trip-list-from{
+    position: absolute;
+    
+    left: 3px;
+}
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 40px 0;
+}
+.footer h5 {
+    font-size: 18px;
+    color: #28a745;
+    font-weight: bold;
+}
+.footer a {
+    color: #6c757d;
+    text-decoration: none;
+}
+.footer a:hover {
+    color: #28a745;
+    text-decoration: none;
+}
+.footer .contact-info {
+    font-size: 16px;
+    color: #212529;
+}
+.footer .social-icons a {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #6c757d;
+}
+.footer .social-icons a:hover {
+    color: #28a745;
+}
+.footer .app-links img {
+    height: 40px;
+    margin: 5px;
+}
+
+
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.login-form,.register-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 70%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1050;
+}
+.register-form{
+    height:80%;
+}
+.logout{
+    position: fixed;
+    
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    height: 30%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1050;
+}
+
+.close-form{
+    background: none !important;
+}
+
+.login-form.show,.register-form.show,.logout.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.overlay.show {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1040;
+}
+.form-footer{
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+.form-footer a{
+    text-decoration: underline;
+    color: blue ;
+}
+.form-message{
+    color: red;
+    font-size: 0.8rem;
+}
+
+
+
+@media (max-width: 768px) {
+    .ticket-search-container{
+        
+        
+        top: 150px;
+        
+        background-color: white;
+        
+    }
+    .popular-trip{
+        margin-top: 10px;
+    } 
+    .login-form,.register-form{
+        height:50%;
+    }
+    
+}
+
+@media(max-width:576px){
+    .ticket-search-container{
+        
+    }
+}
+@media  (max-width: 992px){
+    .nav-link{
+        color: black !important;
+    }
+    header{
+        height: 100px;
+    }
+    .banner{
+        
+    }
+}
+
+

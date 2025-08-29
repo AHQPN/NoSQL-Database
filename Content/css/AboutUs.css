@@ -1,0 +1,157 @@
+header {
+    background-color: #f97019;
+    position: relative;
+    height: 150px;
+    margin-bottom:30px;
+}
+.ticket-search-container,.banner{
+    display:none !important;
+}
+.nav-link:hover{
+    font-weight: bold;
+}
+
+.section-title {
+    color: #e76a24;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.highlight-text {
+    font-size: 20px;
+    color: #dc3545;
+}
+
+.content-section {
+    margin-top: 30px;
+}
+
+.content-section img {
+    max-width: 100%;
+    height: auto;
+}
+
+.btn-read-more {
+    color: #6c757d;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.btn-read-more:hover {
+    color: #e76a24;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.login-form,.register-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1050;
+}
+.logout{
+    position: fixed;
+    
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    height: 30%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1050;
+}
+
+.close-form{
+    background: none !important;
+}
+
+.login-form.show,.register-form.show,.logout.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.overlay.show {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1040;
+}
+
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 40px 0;
+}
+.footer h5 {
+    font-size: 18px;
+    color: #28a745;
+    font-weight: bold;
+}
+.footer a {
+    color: #6c757d;
+    text-decoration: none;
+}
+.footer a:hover {
+    color: #28a745;
+    text-decoration: none;
+}
+.footer .contact-info {
+    font-size: 16px;
+    color: #212529;
+}
+.footer .social-icons a {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #6c757d;
+}
+.footer .social-icons a:hover {
+    color: #28a745;
+}
+.footer .app-links img {
+    height: 40px;
+    margin: 5px;
+}
+
+
+
+
+.form-footer{
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+.form-footer a{
+    text-decoration: underline;
+    color: blue ;
+}
+.form-message{
+    color: red;
+    font-size: 0.8rem;
+}
