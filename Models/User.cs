@@ -9,9 +9,11 @@ namespace Ticket_Booking_System.Models
 {
     public class User
     {
-        
+        [BsonId] // Map _id trong MongoDB
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
 
-        [BsonElement("UserID")]
+        [BsonElement("UserID")] // Map field UserID trong MongoDB
         public string UserID { get; set; }
 
         [BsonElement("Name")]
@@ -24,14 +26,15 @@ namespace Ticket_Booking_System.Models
         [Required(ErrorMessage = "Phone number is required")]
         [BsonElement("Phone_num")]
         public string PhoneNum { get; set; }
-        [BsonIgnoreIfNull]
 
+        [BsonIgnoreIfNull]
         [BsonElement("Address")]
         public string Address { get; set; }
 
-        [BsonElement("Sex")]
         [BsonIgnoreIfNull]
+        [BsonElement("Sex")]
         public string Sex { get; set; }
+
         [BsonIgnoreIfNull]
         [BsonElement("Email")]
         public string Email { get; set; }
@@ -39,12 +42,12 @@ namespace Ticket_Booking_System.Models
         [BsonIgnoreIfNull]
         [BsonElement("Status")]
         public string Status { get; set; }
+
         [BsonIgnoreIfNull]
         [BsonElement("Image")]
         public string Image { get; set; }
 
         [BsonElement("Role")]
-        public string Role { get; set; }  
+        public string Role { get; set; }
     }
-
 }

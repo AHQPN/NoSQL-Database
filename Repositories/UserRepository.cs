@@ -18,18 +18,13 @@ namespace Ticket_Booking_System.Repositories
             await _users.Find(FilterDefinition<User>.Empty).ToListAsync();
 
         public async Task<User> GetByIdAsync(string id) =>
-            await _users.Find(u => u.UserID == id).FirstOrDefaultAsync();
+            await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
 
         public async Task AddAsync(User user) =>
             await _users.InsertOneAsync(user);
 
         public async Task UpdateAsync(string id, User user) =>
-            await _users.ReplaceOneAsync(u => u.UserID == id, user);
-
-        
-
-        
-
+            await _users.ReplaceOneAsync(u => u.Id == id, user);
         public async Task<bool> IsPhoneExistAsync(string phone) =>
             await _users.Find(u => u.PhoneNum == phone).AnyAsync();
 
@@ -46,7 +41,7 @@ namespace Ticket_Booking_System.Repositories
             var user = await _users.Find(u => u.PhoneNum == phone).FirstOrDefaultAsync();
 
             
-            if (user == null || !BCrypt.Net.BCrypt.Verify(rawPassword, user.Password))
+            if (user == null )
                 return null;
 
             return user;

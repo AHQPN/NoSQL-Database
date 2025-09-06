@@ -1,0 +1,92 @@
+﻿
+@{
+    ViewBag.Title = "KQTraCuuVe";
+    Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
+}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="ticket-detail col-12 col-md-8">
+            <div class="ticket-header">
+                Chi Tiết Vé Xe Khách
+            </div>
+            @*@if (ViewBag.xe != null &&
+                ViewBag.loaixe != null &&
+                ViewBag.hd != null &&
+                ViewBag.kh != null &&
+                ViewBag.cd != null)
+            {
+                Xe xe = ViewBag.xe as Xe;
+                Loaixe lx = ViewBag.loaixe as Loaixe;
+                Hoadon hd = ViewBag.hd as Hoadon;
+                Khach kh = ViewBag.kh as Khach;
+                Chuyendi cd = ViewBag.cd as Chuyendi;
+                string[] TPho = cd.tenchuyen.Split(new[] { " - " }, StringSplitOptions.None);*@
+
+                string diemdi = TPho[0].Trim();
+                string diemden = TPho[1].Trim();
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Thông tin khách hàng -->
+                            <div class="ticket-info">
+                                <strong>Tên Khách Hàng:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Số Điện Thoại:</strong>
+                            </div>
+
+
+                            <!-- Thông tin vé -->
+                            <div class="ticket-info">
+                                <strong>Mã Vé:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Loại Xe:</strong>
+                            </div>
+
+
+                            <!-- Thông tin chuyến đi -->
+                            <div class="ticket-info">
+                                <strong>Nơi Đi:</strong>
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Nơi Đến:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Ngày Khởi Hành:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Giờ Khởi Hành:</strong>
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Thời Gian Dự Kiến:</strong>  Phút
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Số Ghế:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Giá Vé:</strong> 
+                            </div>
+                            <div class="ticket-info">
+                                <strong>Biển số xe:</strong> 
+                            </div>
+                        </div>
+                        <div class="col-12 justify-content-center d-flex">
+                            <img src="https://futabus.vn/_next/static/media/logo_banner_mb.6e0db6f9.svg" class="w-50">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="text-center mt-4">
+
+                    <a class="btn btn-secondary" href="/Home/Index">
+                        Quay Lại Trang Chủ
+                    </a>
+                </div>
+            }
+
+        </div>
+
+    </div>
+</div>

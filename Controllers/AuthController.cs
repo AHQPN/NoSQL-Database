@@ -8,6 +8,7 @@ using Ticket_Booking_System.Models;
 using BCrypt.Net;
 using Ticket_Booking_System.Repositories;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Ticket_Booking_System.Controllers
 {
@@ -21,9 +22,9 @@ namespace Ticket_Booking_System.Controllers
             var dbContext = new MongoDbContext();
             _userRepository = new UserRepository(dbContext.Users.Database);
         }
-
         public ActionResult Index()
         {
+
             return View();
         }
 
@@ -36,20 +37,24 @@ namespace Ticket_Booking_System.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(FormCollection form)
         {
-            string sdt = form["sdt"];
-            string rawPassword = form["password"];
+
+            var users = await _userRepository.GetAllAsync();
+            string sdt = form["Phone-number"];
+            string rawPassword = form["pw"];
             if (string.IsNullOrEmpty(sdt) || string.IsNullOrEmpty(rawPassword))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!";
-                return View();
+                ViewBag.ShowLogin = true;
+                return View("Login");
             }
 
-            var usr = await _userRepository.GetByPhoneAndPasswordAsync(sdt,rawPassword); // Lấy user theo số điện thoại
+            var usr = await _userRepository.GetByPhoneAndPasswordAsync(sdt,rawPassword); 
 
             if (usr == null )
             {
                 ViewBag.Error = "Số điện thoại hoặc mật khẩu không đúng!";
-                return View();
+                ViewBag.ShowLogin = true;
+                return View("Login");
             }
 
             Session["User"] = usr.UserID;
@@ -64,25 +69,56 @@ namespace Ticket_Booking_System.Controllers
             }
         }
 
-
+        public ActionResult ErrorRegister(string error,User usr)
+        {
+            ViewBag.Error = error;              
+            ViewBag.ShowRegister = true;      
+            return View("SignUp", usr);            
+        }
         public async Task<ActionResult> SignUp(FormCollection a)
         {
+
+            var _users = await _userRepository.GetAllAsync();
+            Regex regex = new Regex(@"^(0|\+84)([0-9]{9})$");
             User usr = new User();
             string userID = DateTime.Now.ToString("ddMMyy");
             int cnt = await _userRepository.CountNumUser();
             string formattedNumber = (cnt + 1).ToString("D4");
             userID = userID + formattedNumber;
             usr.UserID = userID;
-            usr.Name = a["username"];
+            usr.Name = a["tenkh"];
             usr.PhoneNum = a["Phone"];
             usr.Address = a["Address"];
-            string rawPassword = a["pw"];
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(rawPassword);
-            usr.Password = hashedPassword;
-            usr.Sex = "Name";
-            usr.Email = a["email"];
-
-
+            usr.Password = a["pw"];
+            usr.Role = "Customer";
+            var existingUser = _users.FirstOrDefault(u => u.PhoneNum == usr.PhoneNum);
+            if (string.IsNullOrEmpty(usr.Name) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Password) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Address))
+            {
+                return ErrorRegister("Không để trống các trường.",usr);
+            }
+            else if (usr.PhoneNum.Length < 10 || !regex.IsMatch(usr.PhoneNum) ||!usr.PhoneNum.All(char.IsDigit))
+            {
+                return ErrorRegister("Số điện thoại không đúng định dạng.", usr);
+            }
+            else if (existingUser != null)
+            {
+                return ErrorRegister("Số điện thoại đã được đăng ký trước đó.", usr);
+            }
+            if (a["pw"] != a["confrimed-pw"])
+            {
+                return ErrorRegister("Mật khẩu xác nhận không khớp.", usr);
+            }
+            if (usr.Password.Length < 6)
+            {
+                return ErrorRegister("Mật khẩu phải từ 6 ký tự trở lên.", usr);
+            }
+            else
+            {
+                await _userRepository.AddAsync(usr);
+                TempData["Success"] = "Đăng ký thành công! Hãy đăng nhập.";
+                ViewBag.ShowRegister = true;
+                return View("SignUp");
+            }
             return View();
         }
     }
