@@ -339,10 +339,11 @@
     <Content Include="Views\Ticket\KQTraCuuVe.cshtml" />
     <Content Include="Views\Auth\Login.cshtml" />
     <Content Include="Views\Auth\SignUp.cshtml" />
+    <Content Include="Views\Bill\TraCuuHoaDon.cshtml" />
+    <Content Include="Views\Bill\ChiTietHoaDon.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Bill\" />
     <Folder Include="Views\Trip\" />
     <Folder Include="Views\User\" />
     <Folder Include="Views\Vehicle\" />

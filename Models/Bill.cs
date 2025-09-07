@@ -24,10 +24,17 @@ namespace Ticket_Booking_System.Models
         public double Total { get; set; }
 
         [BsonElement("CustomerID")]
-        public ObjectId CustomerID { get; set; }
+        public string CustomerID { get; set; }
 
-        
+
         [BsonElement("ListItem")]
-        public List<Ticket> ListItem { get; set; }
+        public List<ListItem> ListItem { get; set; }
+
+    }
+    public class ListItem
+    {
+        public string TripID { get; set; }
+        public int Seats { get; set; }
+        public int Price { get; set; }
     }
 }
