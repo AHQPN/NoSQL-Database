@@ -33,8 +33,18 @@ namespace Ticket_Booking_System.Controllers
             return View(groups);
         }
 
+        [HttpGet]
+        public ActionResult GFindTrip(string FromCity, string ToCity, DateTime txtDate, int SoVe)
+        {
+            return FindTripInternalRoute(FromCity, ToCity, txtDate, SoVe);
+        }
+
         [HttpPost]
         public ActionResult FindTrip(string FromCity, string ToCity, DateTime txtDate, int SoVe)
+        {
+            return FindTripInternalRoute(FromCity, ToCity, txtDate, SoVe);
+        }
+        private ActionResult FindTripInternalRoute(string FromCity, string ToCity, DateTime txtDate, int SoVe)
         {
             ViewBag.FromCity = FromCity;
             ViewBag.ToCity = ToCity;
@@ -59,7 +69,6 @@ namespace Ticket_Booking_System.Controllers
             }
             var vehicles = _context.Vehicles.Find(_ => true).ToList();
 
-            // Map sang viewmodel
             var result = query.Select(t =>
             {
                 var vehicle = vehicles.FirstOrDefault(v => v.VehicleID == t.VehicleID);
@@ -82,7 +91,7 @@ namespace Ticket_Booking_System.Controllers
                 .ToList();
             ViewBag.Cities = cities;
 
-            return View(result);
+            return View("FindTrip", result);
         }
 
         private List<PopularRouteCardViewModel> GetPopularTrips()
@@ -113,6 +122,8 @@ namespace Ticket_Booking_System.Controllers
                     Departure = g.Key,
                     Routes = g.Take(3).Select(trip => new RouteItemViewModel
                     {
+                        TripID = trip.TripID,
+                        Departure = trip.RoadMap.First().City,
                         Destination = trip.RoadMap.Last().City,
                         Duration = trip.Duration,
                         Date = trip.DepartureTime,

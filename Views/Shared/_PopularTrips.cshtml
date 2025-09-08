@@ -21,13 +21,19 @@
                     <div class="routes-list">
                         @foreach (var route in card.Routes)
                         {
-                            <div class="route-item">
-                                <div class="info">
-                                    <h3>@route.Destination</h3>
-                                    <p>@route.Duration - @route.Date.ToString("dd/MM/yyyy")</p>
-                                </div>
-                                <div class="price">@route.Price.ToString("N0") đ</div>
-                            </div>
+                            @*<div class="route-item">*@
+                                <a class="route-item" href="@Url.Action("GFindTrip", "Trip", new {
+                                    FromCity = route.Departure,
+                                    ToCity = route.Destination,
+                                    txtDate = route.Date.ToString("yyyy-MM-dd"),
+                                    SoVe = 1 })">
+                                    <div class="info">
+                                        <h3>@route.Destination</h3>
+                                        <p>@route.Duration - @route.Date.ToString("dd/MM/yyyy")</p>
+                                    </div>
+                                    <div class="price">@route.Price.ToString("N0") đ</div>
+                                </a>
+                            @*</div>*@
                         }
                     </div>
                 </div>

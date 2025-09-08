@@ -53,10 +53,12 @@ namespace Ticket_Booking_System.Models
     }
     public class RouteItemViewModel
     {
+        public string Departure { get; set; }
         public string Destination { get; set; }
         public string Duration { get; set; } 
         public DateTime Date { get; set; }
         public double Price { get; set; }
+        public string TripID { get; set; }
     }
     public class TripWithSeatsViewModelAndVehicleInfo
     {
