@@ -13,9 +13,13 @@ namespace Ticket_Booking_System.Controllers
         {
             return View();
         }
-        [HttpGet]
         public ActionResult FindTicket()
         {
+            if (Session["UserID"] ==null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
         public ActionResult KQTraCuuVe()

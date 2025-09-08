@@ -344,9 +344,12 @@
     <Content Include="Views\Trip\PopularTrip.cshtml" />
     <Content Include="Views\Shared\_FindTrip.cshtml" />
     <Content Include="Views\Trip\FindTrip.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="Views\Bill\TraCuuHoaDon.cshtml" />
+    <Content Include="Views\Bill\ChiTietHoaDon.cshtml" />
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Trip\" />
+    <Folder Include="Views\User\" />
+    <Folder Include="Views\Vehicle\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

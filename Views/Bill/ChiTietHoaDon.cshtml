@@ -1,0 +1,55 @@
+﻿@{
+    ViewBag.Title = "ChiTietHoaDon";
+    Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
+    var bill = ViewBag.Bill as Ticket_Booking_System.Models.Bill;
+    var customer = ViewBag.Customer as Ticket_Booking_System.Models.User;
+}
+
+<div class="container my-5">
+    <div class="card shadow-lg rounded-3">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Chi tiết hóa đơn @bill.BillID</h4>
+        </div>
+        <div class="card-body">
+
+            <h5 class="text-secondary mb-3">Thông tin khách hàng</h5>
+            <ul class="list-group mb-4">
+                <li class="list-group-item"><strong>Tên:</strong> @customer.Name</li>
+                <li class="list-group-item"><strong>Email:</strong> @customer.Email</li>
+                <li class="list-group-item"><strong>SĐT:</strong> @customer.PhoneNum</li>
+                <li class="list-group-item"><strong>Địa chỉ:</strong> @customer.Address</li>
+            </ul>
+
+            <h5 class="text-secondary mb-3">Thông tin hóa đơn</h5>
+            <ul class="list-group mb-4">
+                <li class="list-group-item"><strong>Ngày tạo:</strong> @bill.CreateAt</li>
+                <li class="list-group-item"><strong>Tổng tiền:</strong> @bill.Total.ToString("N0") VNĐ</li>
+                <li class="list-group-item"><strong>Số lượng vé:</strong> @bill.Quantity</li>
+            </ul>
+
+            <h5 class="text-secondary mb-3">Danh sách chuyến đi</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>TripID</th>
+                            <th>Số ghế</th>
+                            <th>Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in bill.ListItem)
+                        {
+                            <tr>
+                                <td>@item.TripID</td>
+                                <td>@item.Seats</td>
+                                <td>@item.Price.ToString("N0") VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

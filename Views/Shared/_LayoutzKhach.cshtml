@@ -26,13 +26,13 @@
                     <a class="d-block col-auto" href="/KhachHang/Index">
                         <img src="https://futabus.vn/_next/static/media/logo_banner_mb.6e0db6f9.svg" alt="" width="150">
                     </a>
-                    @if (Session["User"] != null)
+                    @if (Session["UserID"] != null)
                     {
                         <div class="col-auto">
                             <span class="text-white">
                             </span>
                             <a href="/Auth/SignOut" class="text-white">
-                                <i class="bi bi-box-arrow-in-left"></i>
+                                <i class="bi bi-box-arrow-in-left fs-3"></i>
                             </a>
                         </div>
                     }
@@ -69,7 +69,7 @@
                                             <a class="nav-link text-white" href="/Ticket/FindTicket">Tra cứu vé</a>
                                         </li>
                                         <li class="nav-item mx-lg-3">
-                                            <a class="nav-link text-white" href="/Bill/FindBill">Hóa đơn</a>
+                                            <a class="nav-link text-white" href="/Bill/TraCuuHoaDon">Hóa đơn</a>
                                         </li>
                                         <li class="nav-item mx-lg-3">
                                             <a class="nav-link text-white" href="/Customer/AboutUs">Về chúng tôi</a>
@@ -358,12 +358,20 @@
         document.getElementById("date").setAttribute("min", today);
     </script>
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var showLogin = '@ViewBag.ShowLogin';
-        if (showLogin === 'True') {
-            showLoginForm(); // gọi hàm JS mở popup login
-        }
-    });
+         document.addEventListener("DOMContentLoaded", function() {
+            var showLogin = '@TempData["ShowLogin"]';
+            if (showLogin === 'True') {
+                showLoginForm(); // gọi hàm JS mở popup login
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var showRegister = '@TempData["ShowRegister"]';
+            if (showRegister === 'True') {
+                showRegisterForm(); // gọi hàm JS mở popup login
+          }
+        });
     </script>
     <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -410,7 +418,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     </script>
-
 </body>
 
 </html>

@@ -44,7 +44,7 @@ namespace Ticket_Booking_System.Controllers
             if (string.IsNullOrEmpty(sdt) || string.IsNullOrEmpty(rawPassword))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!";
-                ViewBag.ShowLogin = true;
+                TempData["ShowLogin"] = true;
                 return View("Login");
             }
 
@@ -53,11 +53,11 @@ namespace Ticket_Booking_System.Controllers
             if (usr == null )
             {
                 ViewBag.Error = "Số điện thoại hoặc mật khẩu không đúng!";
-                ViewBag.ShowLogin = true;
+                TempData["ShowLogin"] = true;
                 return View("Login");
             }
 
-            Session["User"] = usr.UserID;
+            Session["UserID"] = usr.UserID;
             Session["Role"] = usr.Role;
 
             switch (usr.Role)
@@ -71,8 +71,8 @@ namespace Ticket_Booking_System.Controllers
 
         public ActionResult ErrorRegister(string error,User usr)
         {
-            ViewBag.Error = error;              
-            ViewBag.ShowRegister = true;      
+            ViewBag.Error = error;
+            TempData["ShowRegister"] = true;
             return View("SignUp", usr);            
         }
         public async Task<ActionResult> SignUp(FormCollection a)
@@ -116,7 +116,7 @@ namespace Ticket_Booking_System.Controllers
             {
                 await _userRepository.AddAsync(usr);
                 TempData["Success"] = "Đăng ký thành công! Hãy đăng nhập.";
-                ViewBag.ShowRegister = true;
+                TempData["ShowRegister"] = true;
                 return View("SignUp");
             }
             return View();
