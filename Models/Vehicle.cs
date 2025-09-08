@@ -15,13 +15,16 @@ namespace Ticket_Booking_System.Models
         [BsonElement("VehicleID")]
         public string VehicleID { get; set; }
 
-        [BsonElement("VehicleName")]
-        public string VehicleName { get; set; }
+        //[BsonElement("VehicleName")]
+        //public string VehicleName { get; set; }
 
-        [BsonElement("Type")]
-        public string Type { get; set; }  // bus, car, limousine...
+        [BsonElement("VehicleType")]
+        public string VehicleType { get; set; }  // bus, car, limousine...
 
         [BsonElement("Capacity")]
         public int Capacity { get; set; }
+
+        [BsonElement("UserID")]
+        public string UserID { get; set; }
     }
 }

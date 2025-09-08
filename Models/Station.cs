@@ -11,8 +11,10 @@ namespace Ticket_Booking_System.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }   
+        public string Id { get; set; }
 
+        [BsonElement("StationID")]
+        public string StationID { get; set; }
         [BsonElement("StationName")]
         public string StationName { get; set; } // Tên tỉnh
         [BsonElement("City")]

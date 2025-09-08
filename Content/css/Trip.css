@@ -1,0 +1,298 @@
+﻿/*=========================== start POPULAR TRIP ===========================*/
+.popular-routes {
+    background: #fff6f4;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.popular-routes .title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #006633;
+    margin-bottom: 4px;
+}
+
+.popular-routes .subtitle {
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.routes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+
+.routes-card {
+    width: 360px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+    background: #fff;
+}
+
+.header-image {
+    position: relative;
+    height: 100px;
+    background-color: #ff6f47;
+}
+
+    .header-image .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+    }
+
+.header-content {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    color: #fff;
+    text-align: left;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+    .header-content .subtitle {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .header-content .title {
+        margin: 4px 0 0;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+.routes-list {
+    padding: 12px 16px;
+}
+
+.route-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+    .route-item:last-child {
+        border-bottom: none;
+    }
+
+    .route-item .info h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #006633;
+        font-weight: bold;
+    }
+
+    .route-item .info p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .route-item .price {
+        font-size: 15px;
+        color: #0a0a0a;
+    }
+/*=========================== end POPULAR TRIP ===========================*/
+
+
+/*=========================== start FIND TRIP ===========================*/
+/* Layout */
+.layout {
+    display: flex;
+    gap: 24px;
+    margin-top: 40px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    width: 82%;
+    margin: 40px auto;
+}
+
+/* Filter Card */
+.filter-card {
+    width: 360px;
+    min-width: 360px;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+    .filter-header .title {
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .filter-header .reset {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #E12424;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .filter-header .reset .i{
+        color: red;
+    }
+
+.filter-section {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+
+    .filter-section .label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .filter-section label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+    .btn-group button {
+        padding: 6px 12px;
+        margin-right: 6px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #f8f8f8;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-group button:hover {
+            background-color: #ff6f47;
+        }
+
+        .btn-group button.active {
+            background-color: #ff6f47; /* màu xanh */
+            color: #fff;
+            border-color: #28a745;
+        }
+
+
+/* Trip List */
+.trip-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.trip-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trip-times {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .trip-times .time {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .trip-times .duration {
+        color: #666;
+        font-size: 13px;
+    }
+
+.trip-locations {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+}
+
+.trip-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #555;
+}
+
+    .trip-info .green {
+        color: #2E9B3A;
+    }
+
+    .trip-info .price {
+        color: #E67E22;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+.trip-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .trip-actions .links {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .trip-actions .select-btn {
+        background: #FFEFE3;
+        color: #E67E22;
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .trip-actions .select-btn:hover {
+            background: #FFD8B3;
+        }
+
+/*=========================== end FIND TRIP ===========================*/

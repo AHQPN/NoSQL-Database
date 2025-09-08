@@ -225,6 +225,7 @@
     <Content Include="Content\css\ChuyenDiTheoTimKiem.css" />
     <Content Include="Content\css\dataTables.bootstrap5.min.css" />
     <Content Include="Content\css\index.css" />
+    <Content Include="Content\css\Trip.css" />
     <Content Include="Content\css\style.css" />
     <Content Include="Content\css\TracuuHDForm.css" />
     <Content Include="Content\css\Ve.css" />
@@ -339,13 +340,13 @@
     <Content Include="Views\Ticket\KQTraCuuVe.cshtml" />
     <Content Include="Views\Auth\Login.cshtml" />
     <Content Include="Views\Auth\SignUp.cshtml" />
+    <Content Include="Views\Shared\_PopularTrips.cshtml" />
+    <Content Include="Views\Trip\PopularTrip.cshtml" />
+    <Content Include="Views\Shared\_FindTrip.cshtml" />
+    <Content Include="Views\Trip\FindTrip.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Bill\" />
-    <Folder Include="Views\Trip\" />
-    <Folder Include="Views\User\" />
-    <Folder Include="Views\Vehicle\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

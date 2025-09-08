@@ -1,0 +1,181 @@
+﻿@model List<Ticket_Booking_System.Models.TripWithSeatsViewModelAndVehicleInfo>
+
+<div class="layout">
+    <!-- Bộ lọc tìm kiếm -->
+    <aside class="filter-card">
+        <div class="filter-header">
+            <span class="title">Bộ lọc tìm kiếm</span>
+            <div class="reset">
+                <span>Bỏ lọc</span>
+                <i class="fa-solid fa-trash"></i>
+            </div>
+        </div>
+
+        <!-- Giờ đi -->
+        <div class="filter-section">
+            <span class="label">Giờ đi</span>
+            <label><input type="checkbox" value="night"> Sáng sớm 00:00 - 06:00</label>
+            <label><input type="checkbox" value="morning"> Buổi sáng 06:00 - 12:00</label>
+            <label><input type="checkbox" value="afternoon"> Buổi chiều 12:00 - 18:00</label>
+            <label><input type="checkbox" value="evening"> Buổi tối 18:00 - 24:00</label>
+        </div>
+
+
+        <!-- Loại xe -->
+        <div class="filter-section">
+            <span class="label">Loại xe</span>
+            <div class="btn-group">
+                <button type="button" data-type="seat">Ghế</button>
+                <button type="button" data-type="bed">Giường</button>
+                <button type="button" data-type="limousine">Limousine</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Danh sách chuyến xe -->
+    <main class="trip-list">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var tripVm in Model)
+            {
+                var trip = tripVm.Trip;
+                var departure = trip.DepartureTime.ToLocalTime();
+                var arrival = trip.ArrivalTime.ToLocalTime();
+                var duration = arrival - departure;
+                var from = trip.RoadMap.First().StationName;
+                var to = trip.RoadMap.Last().StationName;
+                var emptySeats = tripVm.EmptySeats;
+                var vehicle = trip.VehicleID;
+                var vehicleType = tripVm.VehicleType;
+                var vehicleName = vehicleType switch
+                {
+                    "seat" => "Ghế",
+                    "bed" => "Giường",
+                    "limousine" => "Limousine",
+                    "bus" => "Xe Bus",
+                    _ => vehicleType
+                };
+
+                <div class="trip-card"
+                     data-departure-hour="@departure.Hour"
+                     data-vehicle="@vehicleType">
+                    <div class="trip-times">
+                        <span class="time">@departure.ToString("HH:mm")</span>
+                        <span class="duration">@duration.Hours giờ</span>
+                        <span class="time">@arrival.ToString("HH:mm")</span>
+                    </div>
+
+                    <div class="trip-locations">
+                        <span>@from</span>
+                        <span>@to</span>
+                    </div>
+
+                    <div class="trip-info">
+                        <div class="details">
+                            <span>• @vehicleName</span>
+                            <span>• <strong class="green">@emptySeats chỗ trống</strong></span>
+                        </div>
+                        <span class="price">@trip.Price.ToString("N0") đ</span>
+                    </div>
+
+                    <div class="trip-actions">
+                        <div></div>
+                        <button class="select-btn">Chọn chuyến</button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>Không tìm thấy chuyến xe nào.</p>
+        }
+    </main>
+
+
+</div>
+
+
+<script>
+    const tripCards = document.querySelectorAll(".trip-card");
+
+    function applyFilters() {
+        let selectedHours = [];
+        document.querySelectorAll(".filter-section input[type=checkbox]:checked").forEach(cb => {
+            selectedHours.push(cb.value);
+        });
+
+        let selectedVehicle = null;
+        const activeBtn = document.querySelector(".btn-group button.active");
+        if (activeBtn) selectedVehicle = activeBtn.dataset.type;
+
+        let counts = {
+            morning: 0,
+            afternoon: 0,
+            evening: 0,
+            night: 0
+        };
+
+        tripCards.forEach(card => {
+            const hour = parseInt(card.dataset.departureHour);
+            const vehicle = card.dataset.vehicle;
+
+            let show = true;
+
+            // lọc theo giờ đi
+            if (selectedHours.length > 0) {
+                show = selectedHours.some(range => {
+                    if (range === "morning") return hour >= 6 && hour < 12;
+                    if (range === "afternoon") return hour >= 12 && hour < 18;
+                    if (range === "evening") return hour >= 18 && hour < 24;
+                    if (range === "night") return hour >= 0 && hour < 6;
+                    return false;
+                });
+            }
+
+            // lọc theo loại xe
+            if (selectedVehicle && show) {
+                show = (vehicle === selectedVehicle);
+            }
+
+            // toggle ẩn/hiện
+            card.style.display = show ? "block" : "none";
+
+            // đếm số chuyến hợp lệ cho filter
+            if (hour >= 6 && hour < 12) counts.morning++;
+            else if (hour >= 12 && hour < 18) counts.afternoon++;
+            else if (hour >= 18 && hour < 24) counts.evening++;
+            else counts.night++;
+        });
+
+        document.querySelectorAll(".filter-section input[type=checkbox]").forEach(cb => {
+            let span = cb.parentElement.querySelector("span.count");
+            if (!span) {
+                span = document.createElement("span");
+                span.classList.add("count");
+                cb.parentElement.appendChild(span);
+            }
+            span.textContent = ` (${counts[cb.value]})`;
+        });
+    }
+
+    document.querySelectorAll(".filter-section input[type=checkbox]").forEach(cb => {
+        cb.addEventListener("change", applyFilters);
+    });
+
+    document.querySelectorAll(".btn-group button").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.querySelectorAll(".btn-group button").forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+            applyFilters();
+        });
+    });
+
+    document.querySelector(".reset").addEventListener("click", () => {
+        document.querySelectorAll(".filter-section input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll(".btn-group button").forEach(b => b.classList.remove("active"));
+        applyFilters();
+    });
+
+    applyFilters();
+</script>
+
