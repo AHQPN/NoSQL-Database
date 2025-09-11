@@ -20,13 +20,10 @@ namespace Ticket_Booking_System.Controllers
         // GET: Trip
         public ActionResult PopularTrip()
         {
-            var trips = _context.Trips.Find(_ => true).ToList();
-
-            var cities = trips
-                .Where(t => t.RoadMap != null)
-                .SelectMany(t => t.RoadMap.Select(r => r.City))
-                .Distinct()
-                .ToList();
+            var cities = _context.Station.AsQueryable()
+                           .Select(s => s.City)
+                           .Distinct()
+                           .ToList();
             ViewBag.Cities = cities;
 
             var groups = GetPopularTrips();
@@ -56,9 +53,9 @@ namespace Ticket_Booking_System.Controllers
 
             DateTime now = DateTime.Now;
 
-            var query = _context.Trips.Find(
+            var query = _context.Trip.Find(
                 t => t.RoadMap.First().City == FromCity &&
-                     t.RoadMap.Last().City == ToCity &&
+                     t.RoadMap.Any(r => r.City == ToCity) &&
                      t.DepartureTime >= startDate &&
                      t.DepartureTime < endDate
             ).ToList();
@@ -67,28 +64,29 @@ namespace Ticket_Booking_System.Controllers
             {
                 query = query.Where(t => t.DepartureTime >= now).ToList();
             }
-            var vehicles = _context.Vehicles.Find(_ => true).ToList();
+            var vehicles = _context.Vehicle.Find(_ => true).ToList();
 
             var result = query.Select(t =>
             {
-                var vehicle = vehicles.FirstOrDefault(v => v.VehicleID == t.VehicleID);
+                var emptySeats = t.ListTicket?.Count(ticket => string.Equals(ticket.Status, "Available", StringComparison.OrdinalIgnoreCase)) ?? 0;
+
+                var tripVehicleId = t.Vehicle?.VehicleID;
+                var vehicle = !string.IsNullOrEmpty(tripVehicleId) ? vehicles.FirstOrDefault(v => v.VehicleID == tripVehicleId) : null;
 
                 return new TripWithSeatsViewModelAndVehicleInfo
                 {
                     Trip = t,
-                    EmptySeats = t.ListTicket.Count(ticket => ticket.Status == "Available"),
-                    VehicleType = vehicle?.VehicleType
+                    EmptySeats = emptySeats,
+                    VehicleType = vehicle?.VehicleType ?? t.Vehicle?.VehicleType,
+                    RoadMapCities = t.RoadMap?.Select(r => r.City).ToList()
                 };
             })
-            .Where(vm => vm.EmptySeats >= SoVe)
             .ToList();
 
-            var tripss = _context.Trips.Find(_ => true).ToList();
-            var cities = tripss
-                .Where(t => t.RoadMap != null)
-                .SelectMany(t => t.RoadMap.Select(r => r.City))
-                .Distinct()
-                .ToList();
+            var cities = _context.Station.AsQueryable()
+                           .Select(s => s.City)
+                           .Distinct()
+                           .ToList();
             ViewBag.Cities = cities;
 
             return View("FindTrip", result);
@@ -96,41 +94,45 @@ namespace Ticket_Booking_System.Controllers
 
         private List<PopularRouteCardViewModel> GetPopularTrips()
         {
-            var popularTrips = _context.Trips.Aggregate()
-                .Project(t => new Trip
-                {
-                    TripID = t.TripID,
-                    TripName = t.TripName,
-                    DepartureTime = t.DepartureTime,
-                    ArrivalTime = t.ArrivalTime,
-                    Price = t.Price,
-                    RoadMap = t.RoadMap,
-                    ListTicket = t.ListTicket
-                })
-                .ToList();
+            var trips = _context.Trip.Find(_ => true).ToList();
 
-            var topTrips = popularTrips
-                .OrderByDescending(t => t.ListTicket.Count(ticket => ticket.Status == "Booked"))
-                .Take(20)
-                .ToList();
+            var tripsWithStats = trips.Select(t => new
+            {
+                Trip = t,
+                BookedSeats = t.ListTicket?.Count(ticket => ticket.Status.Equals("Booked", StringComparison.OrdinalIgnoreCase)) ?? 0
+            }).ToList();
 
-            return topTrips
-                .GroupBy(t => t.RoadMap.First().City)
-                .Take(3)
-                .Select(g => new PopularRouteCardViewModel
+            var groupedByDeparture = tripsWithStats
+                .GroupBy(t => t.Trip.RoadMap.First().City)
+                .Select(g => new
                 {
                     Departure = g.Key,
-                    Routes = g.Take(3).Select(trip => new RouteItemViewModel
-                    {
-                        TripID = trip.TripID,
-                        Departure = trip.RoadMap.First().City,
-                        Destination = trip.RoadMap.Last().City,
-                        Duration = trip.Duration,
-                        Date = trip.DepartureTime,
-                        Price = trip.Price
-                    }).ToList()
+                    TotalBooked = g.Sum(x => x.BookedSeats),
+                    Trips = g.OrderByDescending(x => x.BookedSeats).ToList()
                 })
+                .OrderByDescending(g => g.TotalBooked)
+                .Take(3) 
                 .ToList();
+
+            var result = groupedByDeparture.Select(g => new PopularRouteCardViewModel
+            {
+                Departure = g.Departure,
+                Routes = g.Trips
+                    .Take(3)
+                    .Select(x => new RouteItemViewModel
+                    {
+                        TripID = x.Trip.TripID,
+                        Departure = x.Trip.RoadMap.First().City,
+                        Destination = x.Trip.RoadMap.Last().City,
+                        Duration = x.Trip.Duration,
+                        Date = x.Trip.DepartureTime,
+                        Price = x.Trip.Price
+                    })
+                    .ToList()
+            }).ToList();
+
+            return result;
         }
+
     }
 }

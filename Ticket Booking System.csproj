@@ -200,6 +200,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Bill.cs" />
+    <Compile Include="Models\Driver.cs" />
     <Compile Include="Models\MongoDbContext.cs" />
     <Compile Include="Models\News.cs" />
     <Compile Include="Models\Station.cs" />
@@ -346,15 +347,16 @@
     <Content Include="Views\Trip\FindTrip.cshtml" />
     <Content Include="Views\Bill\TraCuuHoaDon.cshtml" />
     <Content Include="Views\Bill\ChiTietHoaDon.cshtml" />
-    <Folder Include="App_Data\" />
-    <Folder Include="Views\Trip\" />
-    <Folder Include="Views\User\" />
-    <Folder Include="Views\Vehicle\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Views\User\" />
+    <Folder Include="Views\Vehicle\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

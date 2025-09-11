@@ -25,9 +25,9 @@
         <div class="filter-section">
             <span class="label">Loại xe</span>
             <div class="btn-group">
-                <button type="button" data-type="seat">Ghế</button>
-                <button type="button" data-type="bed">Giường</button>
-                <button type="button" data-type="limousine">Limousine</button>
+                <button type="button" data-type="Ghế">Ghế</button>
+                <button type="button" data-type="Giường nằm">Giường</button>
+                <button type="button" data-type="Limousine">Limousine</button>
             </div>
         </div>
     </aside>
@@ -45,18 +45,10 @@
                 var from = trip.RoadMap.First().StationName;
                 var to = trip.RoadMap.Last().StationName;
                 var emptySeats = tripVm.EmptySeats;
-                var vehicle = trip.VehicleID;
                 var vehicleType = tripVm.VehicleType;
-                var vehicleName = vehicleType switch
-                {
-                    "seat" => "Ghế",
-                    "bed" => "Giường",
-                    "limousine" => "Limousine",
-                    "bus" => "Xe Bus",
-                    _ => vehicleType
-                };
+                var roadMap = string.Join(" → ", tripVm.RoadMapCities);
 
-                <div class="trip-card"
+                <div class="trip-card @(emptySeats == 0 ? "disabled" : "")"
                      data-departure-hour="@departure.Hour"
                      data-vehicle="@vehicleType">
                     <div class="trip-times">
@@ -72,15 +64,17 @@
 
                     <div class="trip-info">
                         <div class="details">
-                            <span>• @vehicleName</span>
-                            <span>• <strong class="green">@emptySeats chỗ trống</strong></span>
+                            <span>• @vehicleType </span>
+                            <span>• <strong class="@(emptySeats == 0 ? "red" : "green")">@emptySeats chỗ trống</strong></span>
                         </div>
                         <span class="price">@trip.Price.ToString("N0") đ</span>
                     </div>
 
                     <div class="trip-actions">
-                        <div></div>
-                        <button class="select-btn">Chọn chuyến</button>
+                        <div><strong>Lộ Trình: </strong>@roadMap</div>
+                        <button class="select-btn" @(emptySeats == 0 ? "disabled" : "")>
+                            @(emptySeats == 0 ? "Hết chỗ" : "Chọn chuyến")
+                        </button>
                     </div>
                 </div>
             }

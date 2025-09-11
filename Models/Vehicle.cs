@@ -26,5 +26,7 @@ namespace Ticket_Booking_System.Models
 
         [BsonElement("UserID")]
         public string UserID { get; set; }
+        [BsonElement("Driver")]
+        public Driver Driver { get; set; }
     }
 }

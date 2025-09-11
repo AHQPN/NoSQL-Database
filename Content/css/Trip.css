@@ -225,6 +225,16 @@
     gap: 12px;
 }
 
+    .trip-card.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .trip-card .details .green {
+        color: #5cb85c;
+    }
+
+
 .trip-times {
     display: flex;
     justify-content: space-between;
@@ -259,6 +269,10 @@
         color: #2E9B3A;
     }
 
+    .trip-info .red {
+        color: #d9534f;
+    }
+
     .trip-info .price {
         color: #E67E22;
         font-size: 16px;
@@ -271,12 +285,14 @@
     align-items: center;
 }
 
-    .trip-actions .links {
+    .trip-actions > div {
         display: flex;
         gap: 16px;
         font-size: 13px;
-        color: #666;
-        cursor: pointer;
+        color: #E67E22;
+        border-radius: 8px;
+        padding: 6px 14px;
+        background: #FFEFE3;
     }
 
     .trip-actions .select-btn {

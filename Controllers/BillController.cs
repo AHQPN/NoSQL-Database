@@ -33,7 +33,7 @@ namespace Ticket_Booking_System.Controllers
             var userId = Session["UserID"].ToString();
             // Lọc các hóa đơn của user này
             var filter = Builders<Bill>.Filter.Eq(b => b.CustomerID, userId);
-            var bills = await _dbContext.Bills.Find(filter).ToListAsync();
+            var bills = await _dbContext.Bill.Find(filter).ToListAsync();
             return View(bills);
         }
         [HttpPost]
@@ -43,15 +43,15 @@ namespace Ticket_Booking_System.Controllers
             if (string.IsNullOrEmpty(Mahd))
             {
                 ViewBag.Error = "Vui lòng nhập mã hóa đơn cần tra cứu.";
-                var allBills = await _dbContext.Bills.Find(FilterDefinition<Bill>.Empty).ToListAsync();
+                var allBills = await _dbContext.Bill.Find(FilterDefinition<Bill>.Empty).ToListAsync();
                 return View(allBills);
             }
 
-            var bill = await _dbContext.Bills.Find(b => b.BillID == Mahd).FirstOrDefaultAsync();
+            var bill = await _dbContext.Bill.Find(b => b.BillID == Mahd).FirstOrDefaultAsync();
             if (bill == null)
             {
                 ViewBag.Error = "Không tìm thấy hóa đơn này.";
-                var allBills = await _dbContext.Bills.Find(FilterDefinition<Bill>.Empty).ToListAsync();
+                var allBills = await _dbContext.Bill.Find(FilterDefinition<Bill>.Empty).ToListAsync();
                 return View(allBills);
             }
 
@@ -71,13 +71,13 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var bill = await _dbContext.Bills.Find(b => b.BillID == id).FirstOrDefaultAsync();
+            var bill = await _dbContext.Bill.Find(b => b.BillID == id).FirstOrDefaultAsync();
             if (bill == null)
             {
                 return HttpNotFound("Không tìm thấy hóa đơn.");
             }
 
-            var customer = await _dbContext.Users.Find(u => u.UserID == bill.CustomerID).FirstOrDefaultAsync();
+            var customer = await _dbContext.User.Find(u => u.UserID == bill.CustomerID).FirstOrDefaultAsync();
             ViewBag.Bill = bill;
             ViewBag.Customer = customer;
             return View();

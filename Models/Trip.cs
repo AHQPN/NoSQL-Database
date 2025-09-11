@@ -35,8 +35,8 @@ namespace Ticket_Booking_System.Models
         [BsonElement("RoadMap")]
         public List<Station> RoadMap { get; set; }
 
-        [BsonElement("VehicleID")]
-        public string VehicleID { get; set; } 
+        [BsonElement("Vehicle")]
+        public Vehicle Vehicle { get; set; } 
         [BsonElement("State")]
         public string State { get; set; }
 
@@ -65,6 +65,7 @@ namespace Ticket_Booking_System.Models
         public Trip Trip { get; set; }
         public int EmptySeats { get; set; }
         public string VehicleType { get; set; }
+        public List<string> RoadMapCities { get; set; }
     }
 
 

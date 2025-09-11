@@ -18,13 +18,11 @@ namespace Ticket_Booking_System.Controllers
         }
         public ActionResult Index()
         {
-            var trips = _context.Trips.Find(_ => true).ToList();
-
-            var cities = trips
-                .Where(t => t.RoadMap != null)
-                .SelectMany(t => t.RoadMap.Select(r => r.City))
-                .Distinct()
-                .ToList();
+            var cities = _context.Station.AsQueryable()
+                           .Select(s => s.City)
+                           .Distinct()
+                           .ToList();
+            ViewBag.Cities = cities;
 
             ViewBag.Cities = cities;
             return View();

@@ -9,8 +9,8 @@ namespace Ticket_Booking_System.Models
         [BsonElement("TicketID")]
         public string TicketID { get; set; }
 
-        [BsonElement("SeatNumber")]
-        public string SeatNumber { get; set; }
+        [BsonElement("SeatNum")]
+        public string SeatNum { get; set; }
 
         [BsonElement("Status")]
         public string Status { get; set; }

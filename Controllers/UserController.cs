@@ -12,7 +12,7 @@ namespace Ticket_Booking_System.Controllers
         public UserController()
         {
             var dbContext = new MongoDbContext();
-            _userRepository = new UserRepository(dbContext.Users.Database);
+            _userRepository = new UserRepository(dbContext.User.Database);
         }
 
         // fake collection

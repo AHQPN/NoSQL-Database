@@ -20,7 +20,7 @@ namespace Ticket_Booking_System.Controllers
         public AuthController()
         {
             var dbContext = new MongoDbContext();
-            _userRepository = new UserRepository(dbContext.Users.Database);
+            _userRepository = new UserRepository(dbContext.User.Database);
         }
         public ActionResult Index()
         {
