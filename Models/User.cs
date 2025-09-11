@@ -23,10 +23,6 @@ namespace Ticket_Booking_System.Models
         [BsonElement("Password")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "Phone number is required")]
-        [BsonElement("Phone_num")]
-        public string PhoneNum { get; set; }
-
         [BsonIgnoreIfNull]
         [BsonElement("Address")]
         public string Address { get; set; }

@@ -32,8 +32,8 @@ namespace Ticket_Booking_System.Controllers
 
             var userId = Session["UserID"].ToString();
             // Lọc các hóa đơn của user này
-            var filter = Builders<Bill>.Filter.Eq(b => b.CustomerID, userId);
-            var bills = await _dbContext.Bill.Find(filter).ToListAsync();
+            var filter = Builders<Bill>.Filter.Eq(b => b.Customer.CustomerID, userId);
+            var bills = await _dbContext.Bill.Find(_=>true).ToListAsync();
             return View(bills);
         }
         [HttpPost]
@@ -77,7 +77,7 @@ namespace Ticket_Booking_System.Controllers
                 return HttpNotFound("Không tìm thấy hóa đơn.");
             }
 
-            var customer = await _dbContext.User.Find(u => u.UserID == bill.CustomerID).FirstOrDefaultAsync();
+            var customer = await _dbContext.User.Find(u => u.UserID == bill.Customer.CustomerID).FirstOrDefaultAsync();
             ViewBag.Bill = bill;
             ViewBag.Customer = customer;
             return View();

@@ -56,7 +56,7 @@
                     <td>@bill.CreateAt.ToString("dd/MM/yyyy")</td>
                     <td>@bill.Quantity</td>
                     <td>@bill.Total.ToString("N0") VND</td>
-                    <td>@bill.CustomerID</td>
+                    <td>@bill.Customer.CustomerID</td>
                     <td>
                         <a href="@Url.Action("ChiTietHoaDon", "Bill", new { id = bill.BillID })" class="btn btn-primary btn-sm">Xem chi tiết</a>
                     </td>

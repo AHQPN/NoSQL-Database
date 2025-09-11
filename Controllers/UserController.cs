@@ -29,7 +29,6 @@ namespace Ticket_Booking_System.Controllers
                     Id = "admin01",
                     Name = "Admin",
                     Password = hashedPassword,
-                    PhoneNum = "0123456789",
                     Role = "Admin"
                 },
                 new User
@@ -37,7 +36,6 @@ namespace Ticket_Booking_System.Controllers
                     Id = "customer01",
                     Name = "Customer",
                     Password = hashedPassword,
-                    PhoneNum = "0987654321",
                     Address = "HCM",
                     Email = "customer@example.com",
                     Image = "",
@@ -48,7 +46,6 @@ namespace Ticket_Booking_System.Controllers
                     Id = "driver01",
                     Name = "Driver",
                     Password = hashedPassword,
-                    PhoneNum = "0111222333",
                     Address = "Da Nang",
                     Sex = "Male",
                     Email = "driver@example.com",
@@ -61,7 +58,6 @@ namespace Ticket_Booking_System.Controllers
                     Id = "agent01",
                     Name = "Ticket Agent",
                     Password = hashedPassword,
-                    PhoneNum = "0222333444",
                     Address = "Can Tho",
                     Sex = "Female",
                     Email = "agent@example.com",

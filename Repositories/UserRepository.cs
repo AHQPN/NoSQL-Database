@@ -26,7 +26,7 @@ namespace Ticket_Booking_System.Repositories
         public async Task UpdateAsync(string id, User user) =>
             await _users.ReplaceOneAsync(u => u.Id == id, user);
         public async Task<bool> IsPhoneExistAsync(string phone) =>
-            await _users.Find(u => u.PhoneNum == phone).AnyAsync();
+            await _users.Find(u => u.Email == phone).AnyAsync();
 
         public async Task<int> CountNumUser()
         {
@@ -38,7 +38,7 @@ namespace Ticket_Booking_System.Repositories
         public async Task<User> GetByPhoneAndPasswordAsync(string phone, string rawPassword)
         {
             
-            var user = await _users.Find(u => u.PhoneNum == phone).FirstOrDefaultAsync();
+            var user = await _users.Find(u => u.Email == phone).FirstOrDefaultAsync();
 
             
             if (user == null )

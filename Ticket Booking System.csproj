@@ -347,6 +347,7 @@
     <Content Include="Views\Trip\FindTrip.cshtml" />
     <Content Include="Views\Bill\TraCuuHoaDon.cshtml" />
     <Content Include="Views\Bill\ChiTietHoaDon.cshtml" />
+    <Content Include="Views\Auth\Logout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

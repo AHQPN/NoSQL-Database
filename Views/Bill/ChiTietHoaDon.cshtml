@@ -16,7 +16,6 @@
             <ul class="list-group mb-4">
                 <li class="list-group-item"><strong>Tên:</strong> @customer.Name</li>
                 <li class="list-group-item"><strong>Email:</strong> @customer.Email</li>
-                <li class="list-group-item"><strong>SĐT:</strong> @customer.PhoneNum</li>
                 <li class="list-group-item"><strong>Địa chỉ:</strong> @customer.Address</li>
             </ul>
 
@@ -33,6 +32,9 @@
                     <thead class="table-dark">
                         <tr>
                             <th>TripID</th>
+                            <th>Chuyến đi</th>
+                            <th>Giờ khởi hành</th>
+                            <th>Giờ đến</th>
                             <th>Số ghế</th>
                             <th>Giá</th>
                         </tr>
@@ -41,9 +43,12 @@
                         @foreach (var item in bill.ListItem)
                         {
                             <tr>
-                                <td>@item.TripID</td>
-                                <td>@item.Seats</td>
-                                <td>@item.Price.ToString("N0") VNĐ</td>
+                                <td>@item.TicketID</td>
+                                <td>@bill.TripInfo.TripName</td>
+                                <td>@bill.TripInfo.DepartureTime</td>
+                                <td>@bill.TripInfo.ArrivalTime</td>
+                                <td>@item.SeatNum</td>
+                                <td>@item.Status</td>
                             </tr>
                         }
                     </tbody>

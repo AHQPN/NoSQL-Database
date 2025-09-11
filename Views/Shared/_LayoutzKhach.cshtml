@@ -29,12 +29,11 @@
                     @if (Session["UserID"] != null)
                     {
                         <div class="col-auto">
-                            <span class="text-white">
-                            </span>
-                            <a href="/Auth/SignOut" class="text-white">
+                            <a href="@Url.Action("LogOut", "Auth")" class="text-white">
                                 <i class="bi bi-box-arrow-in-left fs-3"></i>
                             </a>
                         </div>
+
                     }
                     else
                     {
@@ -262,8 +261,8 @@
             </button>
             <div class="header-form-text text-center co-6 fs-2">Đăng nhập</div>
             <div class="my-5">
-                <input type="text" name="Phone-number" class="form-control-lg form-control" id="Phone-number-login"
-                       placeholder="Số điện thoại">
+               <input type="email" name="email" class="form-control-lg form-control" id="Phone-number-login"
+                       placeholder="Email">
                 <span class="form-message"></span>
             </div>
             <div class="my-5">
@@ -306,7 +305,7 @@
             </div>
             <div class="my-3 form-group">
 
-                <input name="Phone" type="text" class=" form-control" id="Phone-number" placeholder="Số điện thoại">
+                <input name="email" type="text" class=" form-control" id="Phone-number" placeholder="Email">
                 <span class="form-message"></span>
             </div>
             <div class="my-3 form-group">
