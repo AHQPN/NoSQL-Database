@@ -1,0 +1,114 @@
+﻿
+@model Ticket_Booking_System.Models.BookingResultViewModel
+
+<h2 class="result-title">Kết quả đặt vé</h2>
+
+@if (Model.BookedSeats != null && Model.BookedSeats.Any())
+{
+    <p class="success-text">
+        <strong>Đã đặt thành công: </strong>@string.Join(", ", Model.BookedSeats)
+    </p>
+}
+
+<div class="qr-container">
+    <div id="qrcode" class="qr-box"></div>
+    <p id="countdown">⏳ Thời gian còn lại: <span id="timer">15:00</span></p>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    var bookingId = "@Html.Raw(Model.BookingID)";
+
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: bookingId,
+        width: 200,
+        height: 200
+    });
+
+    // đếm ngược dựa trên ExpireTime từ server
+    var expireTime = new Date("@Model.ExpireTime.ToString("yyyy-MM-ddTHH:mm:ss")");
+    var timer = setInterval(function () {
+        var now = new Date();
+        var timeLeft = Math.floor((expireTime - now) / 1000);
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+
+            fetch('/Ticket/RollbackBooking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'bookingId=' + bookingId
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Booking expired and rolled back!");
+                location.reload();
+            });
+        } else {
+            var minutes = Math.floor(timeLeft / 60);
+            var seconds = timeLeft % 60;
+            document.getElementById("timer").textContent =
+                (minutes < 10 ? "0" + minutes : minutes) + ":" +
+                (seconds < 10 ? "0" + seconds : seconds);
+        }
+    }, 1000);
+</script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f9fafb;
+        color: #333;
+    }
+
+    .result-title {
+        text-align: center;
+        color: #1a73e8;
+        margin-bottom: 20px;
+    }
+
+    .success-text {
+        text-align: center;
+        color: green;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .error-text {
+        text-align: center;
+        color: red;
+        font-size: 1.1rem;
+        margin-top: 20px;
+    }
+
+    .qr-container {
+        text-align: center;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        width: 280px;
+        margin: 0 auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .qr-box {
+        margin: 0 auto 15px auto;
+        padding: 10px;
+        background: #fff;
+        display: inline-block;
+        border: 2px solid #1a73e8;
+        border-radius: 8px;
+    }
+
+    #countdown {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #e53935;
+    }
+
+    #timer {
+        font-size: 1.3rem;
+    }
+</style>

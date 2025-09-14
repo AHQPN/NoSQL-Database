@@ -72,9 +72,16 @@
 
                     <div class="trip-actions">
                         <div><strong>Lộ Trình: </strong>@roadMap</div>
-                        <button class="select-btn" @(emptySeats == 0 ? "disabled" : "")>
-                            @(emptySeats == 0 ? "Hết chỗ" : "Chọn chuyến")
-                        </button>
+                        @if (emptySeats == 0)
+                        {
+                            <a class="select-btn disabled" href="javascript:void(0)">Hết chỗ</a>
+                        }
+                        else
+                        {
+                            <a class="select-btn" href="@Url.Action("Book_Ticket", "Ticket", new { tripID = trip.TripID })">Chọn chuyến</a>
+
+                        }
+
                     </div>
                 </div>
             }

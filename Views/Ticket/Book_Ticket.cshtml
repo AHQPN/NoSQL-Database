@@ -1,0 +1,348 @@
+﻿@model Ticket_Booking_System.Models.Trip
+
+@{
+    ViewBag.Title = "Book_Ticket";
+}
+
+<style>
+    .ghe {
+        cursor: pointer;
+        text-align: center;
+    }
+
+        .ghe img {
+            width: 40px;
+            height: 40px;
+        }
+
+    .seat-label {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: bold;
+        font-size: 12px;
+        color: #0d6efd;
+    }
+</style>
+
+@functions {
+    string GetSeatLabel(string prefix, int i)
+    {
+        return $"{prefix}{i}";
+    }
+
+    bool IsBooked(string seat, List<Ticket_Booking_System.Models.Ticket> tickets)
+    {
+        return tickets.Any(t => t.SeatNum == seat && t.Status == "Booked");
+    }
+}
+
+<div class="container mb-4 position-relative">
+    <!-- Toast thông báo -->
+    <div class="d-none align-items-center position-absolute p-2 rounded-1" id="mes"
+         role="alert" aria-live="assertive" aria-atomic="true"
+         style="top:0;right:50%">
+        <div class="d-flex">
+            <div class="toast-body text-white"></div>
+        </div>
+    </div>
+
+    <div class="row justify-content-around ">
+        <div class="col-lg-7 border-2">
+            <!-- Chọn vé -->
+            <div class="bg-white rounded-4 gap-2 d-md-flex row">
+                @{
+                    int capacity = Model.Vehicle.Capacity;
+
+                    if (capacity == 40) // Xe limousine / giường nằm
+                    {
+                        <!-- Tầng dưới -->
+                        <div class="col-md-6 row">
+                            <h6 class="text-center">Tầng Dưới</h6>
+                            <div class="row gap-3 justify-content-between">
+                                @for (int i = 1; i <= 20; i++)
+                                {
+                                    var seat = GetSeatLabel("A", i);
+                                    bool booked = IsBooked(seat, Model.ListTicket);
+
+                                    <div class="position-relative ghe col-3">
+                                        <img src="~/Content/@(booked ? "seat_disabled.svg" : "seat_active.svg")"
+                                             alt="@(booked ? "seat_disabled" : "seat_active")" />
+                                        <span class="seat-label">@seat</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Tầng trên -->
+                        <div class="col-md-6 row">
+                            <h6 class="text-center">Tầng Trên</h6>
+                            <div class="row gap-3 justify-content-between">
+                                @for (int i = 1; i <= 20; i++)
+                                {
+                                    var seat = GetSeatLabel("B", i);
+                                    bool booked = IsBooked(seat, Model.ListTicket);
+
+                                    <div class="position-relative ghe col-3">
+                                        <img src="~/Content/@(booked ? "seat_disabled.svg" : "seat_active.svg")"
+                                             alt="@(booked ? "seat_disabled" : "seat_active")" />
+                                        <span class="seat-label">@seat</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else // sơ đồ xe ghê ngồi
+                    {
+                        <div class="col-md-12">
+                            <h6 class="text-center">Sơ đồ ghế</h6>
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                @for (int row = 0; row < capacity / 4; row++)
+                                {
+                                    <div class="d-flex justify-content-center gap-4">
+                                        <!-- Cột trái -->
+                                        <div class="d-flex gap-3">
+                                            @{
+                                                var seat1 = GetSeatLabel("A", row * 4 + 1);
+                                                var seat2 = GetSeatLabel("A", row * 4 + 2);
+                                                bool booked1 = IsBooked(seat1, Model.ListTicket);
+                                                bool booked2 = IsBooked(seat2, Model.ListTicket);
+                                            }
+                                            <div class="position-relative ghe">
+                                                <img src="~/Content/@(booked1 ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@(booked1 ? "seat_disabled" : "seat_active")" />
+                                                <span class="seat-label">@seat1</span>
+                                            </div>
+                                            <div class="position-relative ghe">
+                                                <img src="~/Content/@(booked2 ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@(booked2 ? "seat_disabled" : "seat_active")" />
+                                                <span class="seat-label">@seat2</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cột phải -->
+                                        <div class="d-flex gap-3">
+                                            @{
+                                                var seat3 = GetSeatLabel("A", row * 4 + 3);
+                                                var seat4 = GetSeatLabel("A", row * 4 + 4);
+                                                bool booked3 = IsBooked(seat3, Model.ListTicket);
+                                                bool booked4 = IsBooked(seat4, Model.ListTicket);
+                                            }
+                                            <div class="position-relative ghe">
+                                                <img src="~/Content/@(booked3 ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@(booked3 ? "seat_disabled" : "seat_active")" />
+                                                <span class="seat-label">@seat3</span>
+                                            </div>
+                                            <div class="position-relative ghe">
+                                                <img src="~/Content/@(booked4 ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@(booked4 ? "seat_disabled" : "seat_active")" />
+                                                <span class="seat-label">@seat4</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+
+                <!-- Ghi chú -->
+                <div class="col-md-2 mt-4">
+                    <div class="d-flex flex-md-column gap-2 justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div style="background-color: #D5D9DD; width: 16px; height: 16px;"></div>
+                            <span style="font-size: 12px; margin-left: 5px;">Đã bán</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div style="background-color: #DEF3FF; width: 16px; height: 16px;"></div>
+                            <span style="font-size: 12px; margin-left: 5px;">Còn trống</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div style="background-color: #FDEDE8; width: 16px; height: 16px;"></div>
+                            <span style="font-size: 12px; margin-left: 5px;">Đang chọn</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- Thông tin khách hàng -->
+            <div class="bg-white row mt-2">
+                <div class="col-md-5 m-2">
+                    <h5>Thông tin khách hàng</h5>
+                    <form>
+                        <div class="form-group">
+                            <label for="fullname">Họ và tên *</label>
+                            <input type="text" class="form-control" id="fullname"
+                                   placeholder="Vui lòng nhập tên"
+                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.FullName : "")"
+                                   @(ViewBag.userInfo != null ? "readonly" : "required") />
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại *</label>
+                            <input type="text" class="form-control" id="phone"
+                                   placeholder="Vui lòng nhập số điện thoại"
+                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.Phone : "")"
+                                   @(ViewBag.userInfo != null ? "readonly" : "required") />
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6 m-2">
+                    <h6 class="text-center">Điều khoản & lưu ý</h6>
+                    <p>(*) Quý khách vui lòng có mặt tại bến xuất phát trước ít nhất 30 phút giờ xe khởi hành...</p>
+                </div>
+                <div class="row">
+                    <div class="form-check">
+                        <input class="form-check-input position-static" type="checkbox" id="acceptPolicy" required>
+                        <p>Chấp nhận điều khoản đặt vé & chính sách bảo mật thông tin</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Đặt vé-->
+            <div class="row bg-white mt-2 mb-2">
+                <div class="row m-2 ">
+                    <h6 class="text-white rounded text-center"
+                        style="background-color: #00613D;width: 100px;">
+                        FUTAPAY
+                    </h6>
+                </div>
+                <div class="d-flex justify-content-between p-2">
+                    <h2 class="tongtien">0đ</h2>
+                    <div class="d-flex gap-2">
+                        
+                        <a class="btn" style="color: white;background-color: #f97019;width: 150px;"
+                           id="booking" href="#">
+                            Đặt vé
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin lượt đi -->
+        <div class="col-lg-4 mb-2">
+            <div class="row bg-white rounded-4">
+                <h5 class="row m-1">Thông tin lượt đi</h5>
+                <div class="row">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td>Tuyến xe</td>
+                            <td>@Model.TripName</td>
+                        </tr>
+                        <tr>
+                            <td>Thời gian xuất bến</td>
+                            <td>@Model.DepartureTime</td>
+                        </tr>
+                        <tr>
+                            <td>Số ghế</td>
+                            <td id="soghe"></td>
+                        </tr>
+                        <tr>
+                            <td>Điểm trả khách</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Tổng tiền lượt đi</td>
+                            <td class="tongtien">0đ</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row bg-white rounded-4 mt-2">
+                <h5 class="row m-1">Chi tiết giá</h5>
+                <table class="table">
+                    <tr>
+                        <td>Giá vé lượt đi</td>
+                        <td>@Model.Price</td>
+                    </tr>
+                    <tr>
+                        <td>Phí thanh toán</td>
+                        <td>0đ</td>
+                    </tr>
+                    <tr>
+                        <td>Tổng tiền</td>
+                        <td class="tongtien">0đ</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedSeats = [];
+let seatCount = 0;
+let ticketPrice = @Model.Price;
+
+// Event delegation: click trên container
+document.addEventListener("click", function (e) {
+    let el = e.target.closest(".ghe");
+    if (!el) return; // không click vào ghế thì bỏ qua
+
+    let img = el.querySelector("img");
+    let seat = el.querySelector("span").innerText;
+
+    if (img.alt === "seat_active" && seatCount < 5) {
+        img.src = '/Content/seat_selecting.svg';
+        img.alt = 'seat_selecting';
+        selectedSeats.push(seat);
+        seatCount++;
+    } else if (img.alt === "seat_selecting") {
+        selectedSeats = selectedSeats.filter(s => s !== seat);
+        seatCount--;
+        img.src = '/Content/seat_active.svg';
+        img.alt = 'seat_active';
+    }
+
+    // cập nhật số ghế
+    document.querySelector("#soghe").innerText = selectedSeats.join(',');
+
+    // cập nhật tổng tiền
+    document.querySelectorAll(".tongtien").forEach(el => {
+        el.innerText = (ticketPrice * seatCount) + "đ";
+    });
+
+    // cập nhật link thanh toán
+    document.querySelector("#booking").setAttribute('href',
+        '@Url.Action("Handle_Book_Ticket","Ticket")' + '?tripID=@Model.TripID&seats=' + selectedSeats.join(','));
+
+
+    document.querySelector("#booking").addEventListener("click", function (e) {
+    let fullname = document.querySelector("#fullname").value.trim();
+    let phone = document.querySelector("#phone").value.trim();
+
+    // Nếu chưa login và chưa nhập đủ thông tin
+    if (!fullname || !phone) {
+        e.preventDefault();
+        alert("Vui lòng đăng nhập hoặc điền đầy đủ thông tin khách hàng trước khi đặt vé.");
+        return false;
+    }
+
+    if (!document.querySelector("#acceptPolicy").checked) {
+        e.preventDefault();
+        alert("Bạn cần chấp nhận điều khoản trước khi đặt vé.");
+        return false;
+    }
+});
+});
+</script>
+
+
+@if (TempData["message"] != null)
+{
+    <script>
+        const mes = document.querySelector('#mes');
+        mes.classList.remove('d-none');
+        mes.classList.add('d-flex', 'bg-danger');
+        document.querySelector('.toast-body').innerText = '@TempData["message"]';
+        setTimeout(() => {
+            mes.classList.remove('d-flex', 'bg-danger');
+            mes.classList.add('d-none');
+        }, 2000);
+    </script>
+}
+
