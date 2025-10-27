@@ -16,6 +16,7 @@ namespace Ticket_Booking_System.Models
         public string Status { get; set; }
         [BsonElement("Price")]
         public double Price { get; set; }
+        public DateTime? PendingAt { get; set; } // Thời điểm ghế chuyển sang Pending
     }
 
 }

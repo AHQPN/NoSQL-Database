@@ -36,6 +36,11 @@
     {
         return tickets.Any(t => t.SeatNum == seat && t.Status == "Booked");
     }
+
+    bool IsPending(string seat, List<Ticket_Booking_System.Models.Ticket> tickets)
+    {
+        return tickets.Any(t => t.SeatNum == seat && t.Status == "Pending");
+    }
 }
 
 <div class="container mb-4 position-relative">
@@ -63,10 +68,11 @@
                                 {
                                     var seat = GetSeatLabel("A", i);
                                     bool booked = IsBooked(seat, Model.ListTicket);
+                                    bool pending = IsPending(seat, Model.ListTicket);
 
                                     <div class="position-relative ghe col-3">
-                                        <img src="~/Content/@(booked ? "seat_disabled.svg" : "seat_active.svg")"
-                                             alt="@(booked ? "seat_disabled" : "seat_active")" />
+                                        <img src="~/Content/@((booked || pending) ? "seat_disabled.svg" : "seat_active.svg")"
+                                             alt="@((booked || pending) ? "seat_disabled" : "seat_active")" />
                                         <span class="seat-label">@seat</span>
                                     </div>
                                 }
@@ -81,17 +87,18 @@
                                 {
                                     var seat = GetSeatLabel("B", i);
                                     bool booked = IsBooked(seat, Model.ListTicket);
+                                    bool pending = IsPending(seat, Model.ListTicket);
 
                                     <div class="position-relative ghe col-3">
-                                        <img src="~/Content/@(booked ? "seat_disabled.svg" : "seat_active.svg")"
-                                             alt="@(booked ? "seat_disabled" : "seat_active")" />
+                                        <img src="~/Content/@((booked || pending) ? "seat_disabled.svg" : "seat_active.svg")"
+                                             alt="@((booked || pending) ? "seat_disabled" : "seat_active")" />
                                         <span class="seat-label">@seat</span>
                                     </div>
                                 }
                             </div>
                         </div>
                     }
-                    else // sơ đồ xe ghê ngồi
+                    else // sơ đồ xe ghế ngồi
                     {
                         <div class="col-md-12">
                             <h6 class="text-center">Sơ đồ ghế</h6>
@@ -105,16 +112,18 @@
                                                 var seat1 = GetSeatLabel("A", row * 4 + 1);
                                                 var seat2 = GetSeatLabel("A", row * 4 + 2);
                                                 bool booked1 = IsBooked(seat1, Model.ListTicket);
+                                                bool pending1 = IsPending(seat1, Model.ListTicket);
                                                 bool booked2 = IsBooked(seat2, Model.ListTicket);
+                                                bool pending2 = IsPending(seat2, Model.ListTicket);
                                             }
                                             <div class="position-relative ghe">
-                                                <img src="~/Content/@(booked1 ? "seat_disabled.svg" : "seat_active.svg")"
-                                                     alt="@(booked1 ? "seat_disabled" : "seat_active")" />
+                                                <img src="~/Content/@((booked1 || pending1) ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@((booked1 || pending1) ? "seat_disabled" : "seat_active")" />
                                                 <span class="seat-label">@seat1</span>
                                             </div>
                                             <div class="position-relative ghe">
-                                                <img src="~/Content/@(booked2 ? "seat_disabled.svg" : "seat_active.svg")"
-                                                     alt="@(booked2 ? "seat_disabled" : "seat_active")" />
+                                                <img src="~/Content/@((booked2 || pending2) ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@((booked2 || pending2) ? "seat_disabled" : "seat_active")" />
                                                 <span class="seat-label">@seat2</span>
                                             </div>
                                         </div>
@@ -125,16 +134,18 @@
                                                 var seat3 = GetSeatLabel("A", row * 4 + 3);
                                                 var seat4 = GetSeatLabel("A", row * 4 + 4);
                                                 bool booked3 = IsBooked(seat3, Model.ListTicket);
+                                                bool pending3 = IsPending(seat3, Model.ListTicket);
                                                 bool booked4 = IsBooked(seat4, Model.ListTicket);
+                                                bool pending4 = IsPending(seat4, Model.ListTicket);
                                             }
                                             <div class="position-relative ghe">
-                                                <img src="~/Content/@(booked3 ? "seat_disabled.svg" : "seat_active.svg")"
-                                                     alt="@(booked3 ? "seat_disabled" : "seat_active")" />
+                                                <img src="~/Content/@((booked3 || pending3) ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@((booked3 || pending3) ? "seat_disabled" : "seat_active")" />
                                                 <span class="seat-label">@seat3</span>
                                             </div>
                                             <div class="position-relative ghe">
-                                                <img src="~/Content/@(booked4 ? "seat_disabled.svg" : "seat_active.svg")"
-                                                     alt="@(booked4 ? "seat_disabled" : "seat_active")" />
+                                                <img src="~/Content/@((booked4 || pending4) ? "seat_disabled.svg" : "seat_active.svg")"
+                                                     alt="@((booked4 || pending4) ? "seat_disabled" : "seat_active")" />
                                                 <span class="seat-label">@seat4</span>
                                             </div>
                                         </div>

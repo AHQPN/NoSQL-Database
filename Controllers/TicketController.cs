@@ -17,13 +17,14 @@ namespace Ticket_Booking_System.Controllers
         // GET: Ticket
         private readonly IUserRepository _userRepository;
         private readonly ITripRepository _tripRepository;
+        private readonly IBillRepository _billRepository;
         //private readonly IVehicleRepository _vehicleRepository;
         public TicketController()
         {
             var dbContext = new MongoDbContext();
             _userRepository = new UserRepository(dbContext.User.Database);
             _tripRepository = new TripRepository(dbContext.Trip.Database);
-
+            _billRepository = new BillRepository(dbContext.Bill.Database);
         }
         public ActionResult Index()
         {
@@ -42,9 +43,14 @@ namespace Ticket_Booking_System.Controllers
         {
             return View();
         }
+
+        // Trang đặt vé
         public async Task<ActionResult> Book_Ticket(string tripID)
         {
             TempData.Clear();
+
+            await _tripRepository.ReleaseExpiredPendingSeatsAsync(tripID);
+
             Trip trip = await _tripRepository.GetByIdAsync(tripID);
             string customerID = Session["UserID"] as string;
             User usr = await _userRepository.GetByIdAsync(customerID);
@@ -53,66 +59,21 @@ namespace Ticket_Booking_System.Controllers
             return View(trip);
         }
 
+        // Xử lý đặt ghế
         [HttpGet]
         public async Task<ActionResult> Handle_Book_Ticket(string tripID, string seats, string fullname, string phone, double total)
         {
+            await _tripRepository.ReleaseExpiredPendingSeatsAsync(tripID);
+
             if (string.IsNullOrEmpty(tripID) || string.IsNullOrEmpty(seats))
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Thiếu thông tin chuyến đi hoặc ghế.");
-            }
 
             var seatList = seats.Split(',').Select(s => s.Trim()).ToList();
 
-            Trip trip = await _tripRepository.GetByIdAsync(tripID);
-            if (trip == null)
-            {
-                return HttpNotFound("Không tìm thấy chuyến đi.");
-            }
+            // ✅ Đặt ghế sang Pending qua repository
+            var bookedSeats = await _tripRepository.MarkSeatsPendingAsync(tripID, seatList);
+            var failedSeats = seatList.Except(bookedSeats).ToList();
 
-            var models = new List<WriteModel<Trip>>();
-            var bookedSeats = new List<string>();
-            var failedSeats = new List<string>();
-
-            // Duyệt từng ghế để đặt
-            foreach (var seat in seatList)
-            {
-                var filter = Builders<Trip>.Filter.And(
-                    Builders<Trip>.Filter.Eq(t => t.TripID, tripID),
-                    Builders<Trip>.Filter.ElemMatch(t => t.ListTicket,
-                        tk => tk.SeatNum == seat && tk.Status != "Booked")
-                );
-
-                var update = Builders<Trip>.Update
-                    .Set("ListTicket.$.Status", "Pending")
-                    .Set("ListTicket.$.TicketID", "TK" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper())
-                    .Inc(t => t.RemainingSeats, -1);
-
-                models.Add(new UpdateOneModel<Trip>(filter, update));
-            }
-
-            // Thực hiện cập nhật hàng loạt trong MongoDB
-            var bulkResult = await _tripRepository.BulkWriteAsync(models);
-
-            // Kiểm tra kết quả cập nhật
-            if (bulkResult.ModifiedCount < seatList.Count)
-            {
-                trip = await _tripRepository.GetByIdAsync(tripID);
-
-                foreach (var seat in seatList)
-                {
-                    var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
-                    if (ticket != null && ticket.Status == "Booked")
-                        bookedSeats.Add(seat);
-                    else
-                        failedSeats.Add(seat);
-                }
-            }
-            else
-            {
-                bookedSeats.AddRange(seatList);
-            }
-
-            // Tạo đối tượng kết quả đặt vé
             var bookingResult = new BookingResultViewModel
             {
                 TripID = tripID,
@@ -122,25 +83,26 @@ namespace Ticket_Booking_System.Controllers
                 ExpireTime = DateTime.Now.AddMinutes(15)
             };
 
-            // Nếu có ghế đặt thành công → chuyển sang trang thanh toán
+            // Nếu có ghế đặt thành công → sang trang thanh toán
             if (bookedSeats.Count > 0)
             {
-                return RedirectToAction("ThanhToan", "Ticket", new
+                return RedirectToAction("ThanhToan", new
                 {
-                    tripID = tripID,
+                    tripID,
                     seats = string.Join(",", bookedSeats),
-                    fullname = fullname ?? "",
-                    phone = phone ?? "",
-                    total = total
+                    fullname,
+                    phone,
+                    total
                 });
             }
-            else
-            {
-                // Nếu tất cả ghế đều thất bại → hiển thị kết quả đặt vé
-                return View("BookingResult", bookingResult);
-            }
+
+            // Nếu không đặt được ghế nào
+            TempData["Message"] = "Tất cả ghế đã được đặt trước.";
+            TempData["MessageType"] = "error";
+            return View("BookingResult", bookingResult);
         }
 
+        // Trang thanh toán
         public async Task<ActionResult> ThanhToan(string tripID, string seats, string fullname, string phone, double total)
         {
             var trip = await _tripRepository.GetByIdAsync(tripID);
@@ -161,71 +123,38 @@ namespace Ticket_Booking_System.Controllers
             return View("~/Views/Pay/ThanhToan.cshtml");
         }
 
+        // Xác nhận thanh toán
         [HttpPost]
         public async Task<ActionResult> PaymentConfirm(string tripID, string seats, string fullname, string phone, string action)
         {
-            var seatList = seats?.Split(',').Select(s => s.Trim()).ToList() ?? new List<string>();
+            if (string.IsNullOrEmpty(tripID) || string.IsNullOrEmpty(seats))
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            var seatList = seats.Split(',').Select(s => s.Trim()).ToList();
             var trip = await _tripRepository.GetByIdAsync(tripID);
             if (trip == null) return HttpNotFound("Không tìm thấy chuyến xe.");
 
-            var billRepo = new BillRepository(new MongoDbContext().Bill.Database);
-
-            // 🟡 Hủy vé
+            // 🟠 Hủy vé
             if (action == "cancel")
             {
-                foreach (var seat in seatList)
-                {
-                    var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
-                    if (ticket != null && ticket.Status == "Pending")
-                    {
-                        ticket.Status = "Available";
-                        trip.RemainingSeats++;
-                    }
-                }
-
-                var updateCancel = Builders<Trip>.Update
-                    .Set(t => t.ListTicket, trip.ListTicket)
-                    .Set(t => t.RemainingSeats, trip.RemainingSeats);
-
-                var filter = Builders<Trip>.Filter.Eq(t => t.TripID, trip.TripID);
-                await _tripRepository.UpdateAsync(filter, updateCancel);
-
+                await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Available");
                 TempData["Message"] = "Đã hủy đặt vé.";
                 TempData["MessageType"] = "warning";
-
                 return RedirectToAction("Index", "Home");
             }
 
-            // 🟢 Xác nhận thanh toán
-            foreach (var seat in seatList)
-            {
-                var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
-                if (ticket != null && ticket.Status == "Pending")
-                {
-                    ticket.Status = "Booked";
-                }
-            }
+            // 🟢 Xác nhận thanh toán → cập nhật Booked
+            await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Booked");
 
-            // 🟢 Cập nhật trạng thái vé & số ghế trống
-            trip.RemainingSeats = trip.ListTicket.Count(t => t.Status != "Booked");
-
-            var updatePaid = Builders<Trip>.Update
-                .Set(t => t.ListTicket, trip.ListTicket)
-                .Set(t => t.RemainingSeats, trip.RemainingSeats);
-
-            var filterPaid = Builders<Trip>.Filter.Eq(t => t.TripID, trip.TripID);
-            await _tripRepository.UpdateAsync(filterPaid, updatePaid);
-
-            // ✅ Lấy thông tin user hoặc khách vãng lai
+            // ✅ Lấy thông tin người dùng
             var userID = Session["UserID"] as string;
-            User user = null;
-            if (!string.IsNullOrEmpty(userID))
-                user = await _userRepository.GetByIdAsync(userID);
+            var user = !string.IsNullOrEmpty(userID) ? await _userRepository.GetByIdAsync(userID) : null;
 
             // ✅ Tạo hóa đơn
             var bill = new Bill
             {
                 BillID = "BILL" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper(),
+
                 CreateAt = DateTime.UtcNow.AddHours(7),
                 Quantity = seatList.Count,
                 Total = seatList.Count * trip.Price,
@@ -242,7 +171,7 @@ namespace Ticket_Booking_System.Controllers
                     {
                         TicketID = t.TicketID,
                         SeatNum = t.SeatNum,
-                        Status = t.Status
+                        Status = "Booked"
                     }).ToList(),
                 TripInfo = new TripInfo
                 {
@@ -254,9 +183,8 @@ namespace Ticket_Booking_System.Controllers
                 }
             };
 
-            await billRepo.CreateAsync(bill);
+            await _billRepository.CreateAsync(bill);
 
-            // ✅ Trả về trang hóa đơn
             TempData["Message"] = "Thanh toán thành công!";
             TempData["MessageType"] = "success";
             return RedirectToAction("PaymentSuccess", new { billID = bill.BillID });

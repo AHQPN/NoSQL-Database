@@ -1,10 +1,11 @@
 ﻿using MongoDB.Driver;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ticket_Booking_System.Models;
 
 namespace Ticket_Booking_System.Repositories
 {
-    public class BillRepository
+    public class BillRepository : IBillRepository
     {
         private readonly IMongoCollection<Bill> _bills;
 
@@ -23,6 +24,11 @@ namespace Ticket_Booking_System.Repositories
             return await _bills
                 .Find(b => b.BillID == billID)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Bill>> GetByCustomerIdAsync(string customerId)
+        {
+            return await _bills.Find(b => b.Customer.CustomerID == customerId).ToListAsync();
         }
     }
 }

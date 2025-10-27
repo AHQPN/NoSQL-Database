@@ -12,8 +12,8 @@ namespace Ticket_Booking_System.Repositories
         Task AddAsync(Trip trip);
         Task UpdateAsync(FilterDefinition<Trip> filter, UpdateDefinition<Trip> updateDefinition);
         Task<BulkWriteResult<Trip>> BulkWriteAsync(IEnumerable<WriteModel<Trip>> models);
-
-
-
+        Task<List<string>> MarkSeatsPendingAsync(string tripId, List<string> seatNums);
+        Task UpdateSeatStatusAsync(string tripId, List<string> seatNums, string fromStatus, string toStatus);
+        Task ReleaseExpiredPendingSeatsAsync(string tripId);
     }
 }
