@@ -210,6 +210,7 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\Vehicle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\BillRepository.cs" />
     <Compile Include="Repositories\IRepository.cs" />
     <Compile Include="Repositories\ITripRepository.cs" />
     <Compile Include="Repositories\IUserRepository.cs" />
@@ -355,6 +356,8 @@
     <Content Include="Views\Auth\Logout.cshtml" />
     <Content Include="Views\Ticket\Book_Ticket.cshtml" />
     <Content Include="Views\Ticket\BookingResult.cshtml" />
+    <Content Include="Views\Pay\ThanhToan.cshtml" />
+    <Content Include="Views\Pay\PaymentSuccess.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

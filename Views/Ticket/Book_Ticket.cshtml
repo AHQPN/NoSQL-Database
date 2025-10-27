@@ -40,12 +40,10 @@
 
 <div class="container mb-4 position-relative">
     <!-- Toast thông báo -->
-    <div class="d-none align-items-center position-absolute p-2 rounded-1" id="mes"
+    <div id="mes" class="d-none position-fixed top-0 start-50 translate-middle-x mt-3 p-3 rounded-3 shadow"
          role="alert" aria-live="assertive" aria-atomic="true"
-         style="top:0;right:50%">
-        <div class="d-flex">
-            <div class="toast-body text-white"></div>
-        </div>
+         style="z-index: 9999; min-width: 350px; text-align:center;">
+        <div class="toast-body text-white fw-bold"></div>
     </div>
 
     <div class="row justify-content-around ">
@@ -166,7 +164,7 @@
                 </div>
             </div>
 
-            
+
             <!-- Thông tin khách hàng -->
             <div class="bg-white row mt-2">
                 <div class="col-md-5 m-2">
@@ -176,14 +174,14 @@
                             <label for="fullname">Họ và tên *</label>
                             <input type="text" class="form-control" id="fullname"
                                    placeholder="Vui lòng nhập tên"
-                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.FullName : "")"
+                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.Name : "")"
                                    @(ViewBag.userInfo != null ? "readonly" : "required") />
                         </div>
                         <div class="form-group">
-                            <label for="phone">Số điện thoại *</label>
+                            <label for="phone">Email *</label>
                             <input type="text" class="form-control" id="phone"
-                                   placeholder="Vui lòng nhập số điện thoại"
-                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.Phone : "")"
+                                   placeholder="Vui lòng nhập email"
+                                   value="@(ViewBag.userInfo != null ? ViewBag.userInfo.Email : "")"
                                    @(ViewBag.userInfo != null ? "readonly" : "required") />
                         </div>
                     </form>
@@ -212,7 +210,7 @@
                 <div class="d-flex justify-content-between p-2">
                     <h2 class="tongtien">0đ</h2>
                     <div class="d-flex gap-2">
-                        
+
                         <a class="btn" style="color: white;background-color: #f97019;width: 150px;"
                            id="booking" href="#">
                             Đặt vé
@@ -306,43 +304,57 @@ document.addEventListener("click", function (e) {
         el.innerText = (ticketPrice * seatCount) + "đ";
     });
 
-    // cập nhật link thanh toán
-    document.querySelector("#booking").setAttribute('href',
-        '@Url.Action("Handle_Book_Ticket","Ticket")' + '?tripID=@Model.TripID&seats=' + selectedSeats.join(','));
-
-
+    // ✅ Đặt vé (click)
     document.querySelector("#booking").addEventListener("click", function (e) {
-    let fullname = document.querySelector("#fullname").value.trim();
-    let phone = document.querySelector("#phone").value.trim();
+        let fullname = document.querySelector("#fullname").value.trim();
+        let phone = document.querySelector("#phone").value.trim();
 
-    // Nếu chưa login và chưa nhập đủ thông tin
-    if (!fullname || !phone) {
-        e.preventDefault();
-        alert("Vui lòng đăng nhập hoặc điền đầy đủ thông tin khách hàng trước khi đặt vé.");
-        return false;
-    }
+        if (!fullname || !phone) {
+            e.preventDefault();
+            alert("Vui lòng đăng nhập hoặc điền đầy đủ thông tin khách hàng trước khi đặt vé.");
+            return;
+        }
 
-    if (!document.querySelector("#acceptPolicy").checked) {
-        e.preventDefault();
-        alert("Bạn cần chấp nhận điều khoản trước khi đặt vé.");
-        return false;
-    }
-});
+        if (!document.querySelector("#acceptPolicy").checked) {
+            e.preventDefault();
+            alert("Bạn cần chấp nhận điều khoản trước khi đặt vé.");
+            return;
+        }
+
+        const total = ticketPrice * selectedSeats.length;
+
+        // ✅ Tạo URL đúng cách
+        const url = '@Url.Action("Handle_Book_Ticket","Ticket")'
+            + '?tripID=@Model.TripID'
+            + '&seats=' + encodeURIComponent(selectedSeats.join(','))
+            + '&fullname=' + encodeURIComponent(fullname)
+            + '&phone=' + encodeURIComponent(phone)
+            + '&total=' + total;
+
+        this.href = url;
+    });
 });
 </script>
 
 
-@if (TempData["message"] != null)
+@if (TempData["Message"] != null)
 {
+    var type = TempData["MessageType"] ?? "danger"; 
     <script>
         const mes = document.querySelector('#mes');
         mes.classList.remove('d-none');
-        mes.classList.add('d-flex', 'bg-danger');
-        document.querySelector('.toast-body').innerText = '@TempData["message"]';
+        mes.classList.add('d-flex', 'bg-@type');
+        document.querySelector('.toast-body').innerHTML = "@Html.Raw(TempData["Message"])";
         setTimeout(() => {
-            mes.classList.remove('d-flex', 'bg-danger');
+            mes.classList.remove('d-flex', 'bg-@type');
             mes.classList.add('d-none');
         }, 2000);
     </script>
 }
+
+@{
+    TempData["Message"] = null;
+}
+
+
 

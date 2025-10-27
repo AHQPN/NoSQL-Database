@@ -1,0 +1,137 @@
+﻿
+@{
+    ViewBag.Title = "ThanhToan";
+    Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
+}
+
+@using Ticket_Booking_System.Models;
+@{
+    Trip trip = ViewBag.Trip as Trip;
+    User user = ViewBag.User as User;
+    List<Ticket> bookedTickets = ViewBag.BookedTickets as List<Ticket>;
+    var total = ViewBag.Total;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 bg-white rounded-4 shadow p-4">
+
+            <h3 class="text-center text-success mb-4">XÁC NHẬN THANH TOÁN</h3>
+
+            <!-- 🔹 Thông tin khách hàng -->
+            <h5>Thông tin hành khách</h5>
+            <table class="table table-bordered">
+                <tr><td>Họ và tên</td><td>@ViewBag.FullName</td></tr>
+                <tr><td>Số điện thoại</td><td>@ViewBag.Phone</td></tr>
+            </table>
+
+            <!-- 🔹 Thông tin chuyến -->
+            <h5 class="mt-4">Thông tin chuyến đi</h5>
+            <table class="table table-bordered">
+                <tr><td>Tuyến xe</td><td>@trip.TripName</td></tr>
+                <tr><td>Thời gian xuất bến</td><td>@trip.DepartureTime.ToString("HH:mm dd/MM/yyyy")</td></tr>
+                <tr><td>Số ghế</td><td>@string.Join(", ", bookedTickets.Select(x => x.SeatNum))</td></tr>
+                <tr><td>Số lượng</td><td>@bookedTickets.Count</td></tr>
+                <tr><td>Điểm đón</td><td>BX Miền Tây</td></tr>
+                <tr><td>Điểm trả</td><td>Vũng Tàu</td></tr>
+            </table>
+
+            <!-- 🔹 Chi tiết giá -->
+            <h5 class="mt-4">Chi tiết giá</h5>
+            <table class="table table-bordered">
+                <tr><td>Giá vé / ghế</td><td>@trip.Price.ToString("N0") ₫</td></tr>
+                <tr><td>Phí thanh toán</td><td>0 ₫</td></tr>
+                <tr><td><strong>Tổng cộng</strong></td><td><strong class="text-danger">@total.ToString("N0") ₫</strong></td></tr>
+            </table>
+
+            <!-- 🔹 QR code + countdown -->
+            <div class="text-center mt-5">
+                <h5>Quét mã QR để thanh toán</h5>
+                <div id="qrcode" class="qr-box mx-auto"></div>
+                <p id="countdown" class="mt-3 fs-5 text-danger">
+                    ⏳ Thời gian giữ vé: <span id="timer">15:00</span>
+                </p>
+            </div>
+
+            <!-- 🔹 Nút xác nhận & Hủy -->
+            <div class="text-center mt-4">
+                <form method="post" action="@Url.Action("PaymentConfirm", "Ticket")">
+                    <input type="hidden" name="tripID" value="@ViewBag.Trip.TripID" />
+                    <input type="hidden" name="seats" value="@string.Join(",", ViewBag.Seats)" />
+                    <input type="hidden" name="fullname" value="@ViewBag.FullName" />
+                    <input type="hidden" name="phone" value="@ViewBag.Phone" />
+
+                    <button type="submit" name="action" value="confirm" class="btn btn-success btn-lg px-4">Đã thanh toán</button>
+
+                    <button type="submit" name="action" value="cancel" class="btn btn-secondary btn-lg ms-2 px-4">Hủy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ QR Code & Countdown Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const bookingId = "@Guid.NewGuid().ToString("N")"; // Mã giả, có thể thay bằng BookingID thực
+    new QRCode(document.getElementById("qrcode"), {
+        text: bookingId,
+        width: 200,
+        height: 200
+    });
+
+    // Đếm ngược 15 phút (900 giây)
+    let timeLeft = 15 * 60;
+    const timerElem = document.getElementById("timer");
+
+    const countdown = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElem.textContent =
+            (minutes < 10 ? "0" : "") + minutes + ":" +
+            (seconds < 10 ? "0" : "") + seconds;
+
+        timeLeft--;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert("⏰ Hết thời gian thanh toán! Vé của bạn sẽ được hủy.");
+            window.location.href = '/Ticket/RollbackBooking?tripId=@trip.TripID&seats=@string.Join(",", bookedTickets.Select(x => x.SeatNum))';
+        }
+    }, 1000);
+</script>
+<script>
+    // Hủy vé sau 15 phút nếu chưa thanh toán
+    setTimeout(() => {
+        const tripID = '@ViewBag.Trip.TripID';
+        const seats = '@string.Join(",", ViewBag.Seats)';
+        window.location.href = '@Url.Action("RollbackBooking", "Ticket")'
+            + '?tripId=' + tripID + '&seats=' + seats;
+    }, 15 * 60 * 1000); // 15 phút
+</script>
+
+<style>
+    body {
+        background: #f9fafb;
+        font-family: Arial, sans-serif;
+    }
+
+    .qr-box {
+        margin-top: 10px;
+        padding: 10px;
+        border: 2px solid #1a73e8;
+        border-radius: 12px;
+        display: inline-block;
+        background: #fff;
+    }
+
+    table {
+        background-color: #fff;
+    }
+
+    .btn-lg {
+        min-width: 180px;
+    }
+</style>
+
+

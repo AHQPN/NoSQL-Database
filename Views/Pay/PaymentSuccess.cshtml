@@ -1,0 +1,92 @@
+﻿@model Ticket_Booking_System.Models.Bill
+@{
+    ViewBag.Title = "PaymentSuccess";
+    Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
+}
+
+@if (TempData["Message"] != null)
+{
+    var type = TempData["MessageType"] ?? "success";
+    <div id="mes" class="d-none position-fixed top-0 start-50 translate-middle-x mt-3 p-3 rounded-3 shadow"
+         role="alert" aria-live="assertive" aria-atomic="true"
+         style="z-index: 9999; min-width: 350px; text-align:center;">
+        <div class="d-flex">
+            <div class="toast-body">
+                @Html.Raw(TempData["Message"])
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container mt-5 text-center">
+    <h2 class="text-success mb-4">
+        <i class="fa fa-check-circle"></i> Thanh toán thành công!
+    </h2>
+
+    <div class="card shadow-lg p-4 mx-auto" style="max-width: 600px;">
+        <h4 class="mb-3 text-primary">Hóa đơn thanh toán</h4>
+
+        <table class="table table-borderless text-start">
+            <tr>
+                <th>Mã hóa đơn:</th>
+                <td>@Model.BillID</td>
+            </tr>
+            <tr>
+                <th>Khách hàng:</th>
+                <td>@Model.Customer.Name (@Model.Customer.PhoneNum)</td>
+            </tr>
+            <tr>
+                <th>Chuyến đi:</th>
+                <td>@Model.TripInfo.TripName</td>
+            </tr>
+            <tr>
+                <th>Thời gian khởi hành:</th>
+                <td>@Model.TripInfo.DepartureTime.ToString("HH:mm dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Ghế đã mua:</th>
+                <td>
+                    @string.Join(", ", Model.ListItem.Select(i => i.SeatNum))
+                </td>
+            </tr>
+            <tr>
+                <th>Số lượng vé:</th>
+                <td>@Model.Quantity</td>
+            </tr>
+            <tr>
+                <th>Tổng tiền:</th>
+                <td><strong>@Model.Total.ToString("N0") ₫</strong></td>
+            </tr>
+            <tr>
+                <th>Trạng thái thanh toán:</th>
+                <td><span class="badge bg-success">@Model.PaymentStatus</span></td>
+            </tr>
+            <tr>
+                <th>Ngày tạo hóa đơn:</th>
+                <td>@Model.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary me-2">
+            <i class="fa fa-home"></i> Về trang chủ
+        </a>
+        <a href="@Url.Action("MyTickets", "User")" class="btn btn-success">
+            <i class="fa fa-ticket"></i> Xem vé của tôi
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Thanh toán thành công!',
+        text: 'Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!',
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
+
+

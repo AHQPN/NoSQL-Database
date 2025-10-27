@@ -24,6 +24,9 @@ namespace Ticket_Booking_System.Models
         [BsonElement("Total")]
         public double Total { get; set; }
 
+        [BsonElement("PaymentStatus")]
+        public string PaymentStatus { get; set; } = "Pending";  // Thêm tạm trạng thái thanh toán
+
         [BsonElement("Customer")]
         public CustomerInfo Customer { get; set; }
 

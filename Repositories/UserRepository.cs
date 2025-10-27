@@ -11,37 +11,37 @@ namespace Ticket_Booking_System.Repositories
 
         public UserRepository(IMongoDatabase database)
         {
-            _users = database.GetCollection<User>("Users");
+            _users = database.GetCollection<User>("User");
         }
 
         public async Task<IEnumerable<User>> GetAllAsync() =>
             await _users.Find(FilterDefinition<User>.Empty).ToListAsync();
 
         public async Task<User> GetByIdAsync(string id) =>
-            await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
+            await _users.Find(u => u.UserID == id).FirstOrDefaultAsync();
 
         public async Task AddAsync(User user) =>
             await _users.InsertOneAsync(user);
 
         public async Task UpdateAsync(string id, User user) =>
-            await _users.ReplaceOneAsync(u => u.Id == id, user);
+            await _users.ReplaceOneAsync(u => u.UserID == id, user);
         public async Task<bool> IsPhoneExistAsync(string phone) =>
             await _users.Find(u => u.Email == phone).AnyAsync();
 
         public async Task<int> CountNumUser()
         {
-            
+
             var cnt = await _users.CountDocumentsAsync(FilterDefinition<User>.Empty);
             return (int)cnt;
         }
 
         public async Task<User> GetByPhoneAndPasswordAsync(string phone, string rawPassword)
         {
-            
+
             var user = await _users.Find(u => u.Email == phone).FirstOrDefaultAsync();
 
-            
-            if (user == null )
+
+            if (user == null)
                 return null;
 
             return user;
