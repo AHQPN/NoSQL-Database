@@ -7,7 +7,7 @@ using Ticket_Booking_System.Models;
 
 namespace Ticket_Booking_System.Repositories
 {
-    interface IUserRepository: IRepository<User>
+    public interface IUserRepository: IRepository<User>
     {
         Task<User> GetByPhoneAndPasswordAsync(string phone, string rawPassword);
         Task<int> CountNumUser();

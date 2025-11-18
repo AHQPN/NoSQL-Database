@@ -1,0 +1,241 @@
+﻿/* === Body & Navbar === */
+body {
+    padding-top: 70px;
+    overflow-x: hidden;
+    background: #fdf6f0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.navbar-custom {
+    height: 70px;
+    background-color: #ff7300;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    color: white;
+    z-index: 1030;
+}
+
+    .navbar-custom img {
+        transition: transform 0.3s ease;
+    }
+
+        .navbar-custom img:hover {
+            transform: scale(1.05);
+        }
+
+.btn-logout {
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #ff7300;
+    border: 1px solid #ff7300;
+}
+
+    .btn-logout:hover {
+        background-color: #ff7300;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+/* === Sidebar Desktop === */
+.sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 260px;
+    height: calc(100vh - 70px);
+    background: #fff;
+    padding: 2rem 0;
+    z-index: 1020;
+    overflow-y: auto;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+    .sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #ff7300;
+        border-radius: 3px;
+    }
+
+    /* User info */
+    .sidebar .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-bottom: 1px solid #ff7300;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .sidebar .user-info img.user-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 0.5rem;
+            border: 2px solid #ff7300;
+        }
+
+        .sidebar .user-info h6 {
+            color: #ff7300;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0;
+        }
+
+    /* Sidebar nav */
+    .sidebar .nav-link {
+        color: #333;
+        padding: 1rem 1.5rem;
+        margin: 0.25rem 1rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: #ffedd5;
+            color: #ff7300;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #ff7300;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255,115,0,0.4);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.3rem;
+            width: 30px;
+        }
+
+/* === Main Content === */
+.main-content {
+    margin-left: 260px;
+    padding: 2rem;
+    min-height: calc(100vh - 70px);
+    background: #fff7f0;
+    font-size: 1rem;
+}
+
+    .main-content h1, .main-content h2, .main-content h3 {
+        font-weight: 700;
+        color: #ff7300;
+    }
+
+/* === Stat card === */
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    color: #333;
+    background: #fff;
+}
+
+    .stat-card .title {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .stat-card .number {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-top: 0.5rem;
+    }
+
+    .stat-card.tickets-today {
+        background-color: #00b74a; /* xanh lá FUTA */
+        color: white;
+    }
+
+/* === Offcanvas Mobile Sidebar === */
+.offcanvas {
+    width: 280px;
+}
+
+.offcanvas-header {
+    background-color: #ff7300;
+    color: white;
+    padding: 1.5rem;
+}
+
+.offcanvas-body {
+    padding: 1.5rem 0;
+}
+
+.offcanvas .nav-link {
+    color: #333;
+    padding: 1rem 1.5rem;
+    margin: 0.25rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+    .offcanvas .nav-link:hover {
+        background-color: #ffedd5;
+        color: #ff7300;
+    }
+
+    .offcanvas .nav-link.active {
+        background-color: #ff7300;
+        color: #fff;
+    }
+
+    .offcanvas .nav-link i {
+        font-size: 1.3rem;
+        width: 30px;
+    }
+
+/* === Responsive adjustments === */
+@media (max-width: 991.98px) {
+    .main-content {
+        margin-left: 0;
+    }
+
+    .navbar .container-fluid {
+        padding: 0 1rem;
+    }
+
+    .navbar-toggler {
+        border: none;
+        padding: 0.5rem;
+    }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+}
+
+.ticket-card {
+    background-color: #fff; /* nền trắng */
+    border-left: 6px solid #00b74a; /* viền xanh lá FUTA bên trái */
+    border-radius: 10px; /* bo góc */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* bóng nổi */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .ticket-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .ticket-card .card-title {
+        font-size: 1.2rem; /* chữ tiêu đề lớn hơn */
+        color: #00b74a; /* xanh lá */
+    }
+
+    .ticket-card .card-text {
+        font-size: 2.5rem; /* chữ số lớn */
+        color: #333;
+    }

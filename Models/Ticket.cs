@@ -17,6 +17,11 @@ namespace Ticket_Booking_System.Models
         [BsonElement("Price")]
         public double Price { get; set; }
         public DateTime? PendingAt { get; set; } // Thời điểm ghế chuyển sang Pending
-    }
 
+        [BsonElement("BookingDate")]
+        public DateTime? BookingDate { get; set; } // Ngày đặt vé
+
+        [BsonIgnore]
+        public string TripId { get; set; }
+    }
 }

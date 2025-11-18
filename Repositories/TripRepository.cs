@@ -62,9 +62,9 @@ namespace Ticket_Booking_System.Repositories
 
             var arrayFilter = new[]
             {
-        new JsonArrayFilterDefinition<BsonDocument>(
-            "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': 'Available' }")
-    };
+                new JsonArrayFilterDefinition<BsonDocument>(
+                    "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': 'Available' }")
+            };
 
             var options = new UpdateOptions { ArrayFilters = arrayFilter };
 
@@ -97,7 +97,9 @@ namespace Ticket_Booking_System.Repositories
             if (seatNums == null || seatNums.Count == 0) return;
 
             var filter = Builders<Trip>.Filter.Eq(t => t.TripID, tripId);
-            var update = Builders<Trip>.Update.Set("ListTicket.$[elem].Status", toStatus);
+            var update = Builders<Trip>.Update
+                .Set("ListTicket.$[elem].Status", toStatus)
+                .Set("ListTicket.$[elem].BookingDate", DateTime.UtcNow);
 
             var arrayFilter = new[]
             {
@@ -110,6 +112,15 @@ namespace Ticket_Booking_System.Repositories
 
             if (toStatus == "Available" && result.ModifiedCount > 0)
             {
+                // Xóa BookingDate
+                var unsetBookingDate = Builders<Trip>.Update
+                    .Unset("ListTicket.$[elem].BookingDate");
+
+                await _trips.UpdateOneAsync(filter, unsetBookingDate, new UpdateOptions
+                {
+                    ArrayFilters = arrayFilter
+                });
+
                 var trip = await GetByIdAsync(tripId);
                 if (trip != null)
                 {
@@ -153,9 +164,9 @@ namespace Ticket_Booking_System.Repositories
 
             var arrayFilter = new[]
             {
-        new JsonArrayFilterDefinition<BsonDocument>(
-            "{ 'elem.Status': 'Pending', 'elem.PendingAt': { $lt: ISODate('" + expireTime.ToString("o") + "') } }")
-    };
+                new JsonArrayFilterDefinition<BsonDocument>(
+                    "{ 'elem.Status': 'Pending', 'elem.PendingAt': { $lt: ISODate('" + expireTime.ToString("o") + "') } }")
+            };
 
             var options = new UpdateOptions { ArrayFilters = arrayFilter };
 
@@ -173,5 +184,22 @@ namespace Ticket_Booking_System.Repositories
             }
         }
 
+        public async Task<List<Ticket>> GetTicketsByDateAsync(DateTime date)
+        {
+            var trips = await GetAllAsync();
+
+            var tickets = trips.SelectMany(trip => trip.ListTicket
+                .Where(t => t.Status == "Booked" &&
+                            t.BookingDate.HasValue &&
+                            t.BookingDate.Value.Date == date.Date)
+                .Select(t =>
+                {
+                    t.TripId = trip.TripID; 
+                    return t;
+                })
+            ).ToList();
+
+            return tickets;
+        }
     }
 }

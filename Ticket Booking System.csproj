@@ -191,6 +191,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BillController.cs" />
+    <Compile Include="Controllers\TicketAgentController.cs" />
     <Compile Include="Controllers\TicketController.cs" />
     <Compile Include="Controllers\TripController.cs" />
     <Compile Include="Controllers\UserController.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="Models\Station.cs" />
     <Compile Include="Models\Ticket.cs" />
     <Compile Include="Models\Trip.cs" />
+    <Compile Include="Models\TripStatsViewModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\Vehicle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -233,6 +235,7 @@
     <Content Include="Content\css\ChuyenDiTheoTimKiem.css" />
     <Content Include="Content\css\dataTables.bootstrap5.min.css" />
     <Content Include="Content\css\index.css" />
+    <Content Include="Content\css\ticketagent.css" />
     <Content Include="Content\css\Trip.css" />
     <Content Include="Content\css\style.css" />
     <Content Include="Content\css\TracuuHDForm.css" />
@@ -359,6 +362,8 @@
     <Content Include="Views\Ticket\BookingResult.cshtml" />
     <Content Include="Views\Pay\ThanhToan.cshtml" />
     <Content Include="Views\Pay\PaymentSuccess.cshtml" />
+    <Content Include="Views\Shared\_Layout_NhanVien.cshtml" />
+    <Content Include="Views\TicketAgent\Dashboard.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

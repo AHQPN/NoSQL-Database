@@ -61,11 +61,17 @@ namespace Ticket_Booking_System.Controllers
             }
 
             Session["UserID"] = usr.UserID;
+            Session["UserName"] = usr.Name;
             Session["Role"] = usr.Role;
+
+            // Nếu có avatar
+            Session["Avatar"] = string.IsNullOrEmpty(usr.Image)
+                ? "/Content/images/default-avatar.png"
+                : usr.Image;
 
             switch (usr.Role)
             {
-                case "TicketAgent": return RedirectToAction("TicketAgentSite", "Home");
+                case "TicketAgent": return RedirectToAction("Dashboard", "TicketAgent");
                 case "Admin": return RedirectToAction("AdminSite", "Home");
                 case "Driver": return RedirectToAction("DriverSite", "Home");
                 default: return RedirectToAction("Index", "Home");

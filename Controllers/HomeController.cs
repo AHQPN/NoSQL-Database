@@ -28,6 +28,14 @@ namespace Ticket_Booking_System.Controllers
             return View();
         }
 
+        public ActionResult TicketAgent()
+        {
+            if (Session["nv"] != null)
+            {
+                return RedirectToAction("Dashboard", "TicketAgent");
+            }
+            return RedirectToAction("Index", "Home");
+        }
 
         public ActionResult About()
         {
