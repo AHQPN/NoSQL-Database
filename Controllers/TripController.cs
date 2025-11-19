@@ -18,6 +18,7 @@ namespace Ticket_Booking_System.Controllers
             _context = new MongoDbContext();
         }
         // GET: Trip
+        [ChildActionOnly]
         public ActionResult PopularTrip()
         {
             var cities = _context.Station.AsQueryable()
@@ -27,7 +28,8 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.Cities = cities;
 
             var groups = GetPopularTrips();
-            return View(groups);
+            //return View(groups);
+            return PartialView("~/Views/Shared/_PopularTrips.cshtml", groups);
         }
 
         [HttpGet]

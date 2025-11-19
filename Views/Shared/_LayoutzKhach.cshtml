@@ -157,12 +157,12 @@
                             <div class="col-md-2">
                                 <label for="tickets" class="form-label">Số vé</label>
                                 @*<select name="SoVe" id="tickets" class="form-select info-ticket">
-                                        <option value="1" selected>1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                    </select>*@
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>*@
                                 <select name="SoVe" id="tickets" class="form-select info-ticket">
                                     @for (int i = 1; i <= 5; i++)
                                     {
@@ -186,6 +186,8 @@
                 @RenderBody()
 
                 <!--Danh sách các tuyến phổ biến-->
+                @*@Html.Action("PopularTrip", "Trip")*@
+
             </div>
         </div>
     </div>
