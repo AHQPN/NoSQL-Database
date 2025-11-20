@@ -17,25 +17,20 @@
 
             <h3 class="text-center text-success mb-4">XÁC NHẬN THANH TOÁN</h3>
 
-            <!-- 🔹 Thông tin khách hàng -->
             <h5>Thông tin hành khách</h5>
             <table class="table table-bordered table-fixed">
                 <tr><td class="label-col">Họ và tên</td><td>@ViewBag.FullName</td></tr>
                 <tr><td class="label-col">Số điện thoại</td><td>@ViewBag.Phone</td></tr>
             </table>
 
-            <!-- 🔹 Thông tin chuyến -->
             <h5 class="mt-4">Thông tin chuyến đi</h5>
             <table class="table table-bordered table-fixed">
                 <tr><td class="label-col">Tuyến xe</td><td>@trip.TripName</td></tr>
                 <tr><td class="label-col">Thời gian xuất bến</td><td>@trip.DepartureTime.ToString("HH:mm dd/MM/yyyy")</td></tr>
                 <tr><td class="label-col">Số ghế</td><td>@string.Join(", ", bookedTickets.Select(x => x.SeatNum))</td></tr>
                 <tr><td class="label-col">Số lượng</td><td>@bookedTickets.Count</td></tr>
-                @*<tr><td class="label-col">Điểm đón</td><td>BX Miền Tây</td></tr>
-                <tr><td class="label-col">Điểm trả</td><td>Vũng Tàu</td></tr>*@
             </table>
 
-            <!-- 🔹 Chi tiết giá -->
             <h5 class="mt-4">Chi tiết giá</h5>
             <table class="table table-bordered table-fixed">
                 <tr><td class="label-col">Giá vé / ghế</td><td>@trip.Price.ToString("N0") ₫</td></tr>
@@ -43,7 +38,6 @@
                 <tr><td class="label-col"><strong>Tổng cộng</strong></td><td><strong class="text-danger">@total.ToString("N0") ₫</strong></td></tr>
             </table>
 
-            <!-- 🔹 QR code + countdown -->
             <div class="text-center mt-5">
                 <h5>Quét mã QR để thanh toán</h5>
                 <div id="qrcode" class="qr-box mx-auto"></div>
@@ -52,7 +46,6 @@
                 </p>
             </div>
 
-            <!-- 🔹 Nút xác nhận & Hủy -->
             <div class="text-center mt-4">
                 <form method="post" action="@Url.Action("PaymentConfirm", "Ticket")">
                     <input type="hidden" name="tripID" value="@ViewBag.Trip.TripID" />
@@ -69,7 +62,6 @@
     </div>
 </div>
 
-<!-- ✅ QR Code & Countdown Script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     const bookingId = "@Guid.NewGuid().ToString("N")";
@@ -79,7 +71,6 @@
         height: 200
     });
 
-    // Đếm ngược 15 phút (900 giây)
     let timeLeft = 15 * 60;
     const timerElem = document.getElementById("timer");
 
@@ -100,7 +91,6 @@
     }, 1000);
 </script>
 <script>
-    // Hủy vé sau 15 phút nếu chưa thanh toán
     setTimeout(() => {
         const tripID = '@ViewBag.Trip.TripID';
         const seats = '@string.Join(",", ViewBag.Seats)';
@@ -115,13 +105,11 @@
         font-family: Arial, sans-serif;
     }
 
-    /* Fixed table layout để căn chỉnh đều */
     .table-fixed {
         table-layout: fixed;
         width: 100%;
     }
 
-        /* Cột label có chiều rộng cố định */
         .table-fixed .label-col {
             width: 35%;
             font-weight: 500;
@@ -130,7 +118,6 @@
             padding: 12px 15px;
         }
 
-        /* Cột giá trị */
         .table-fixed td:not(.label-col) {
             width: 65%;
             vertical-align: middle;
@@ -154,7 +141,6 @@
         min-width: 180px;
     }
 
-    /* Đảm bảo text không bị tràn */
     .table-fixed td {
         word-wrap: break-word;
         overflow-wrap: break-word;

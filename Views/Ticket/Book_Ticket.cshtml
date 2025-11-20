@@ -315,7 +315,6 @@ document.addEventListener("click", function (e) {
         el.innerText = (ticketPrice * seatCount) + "đ";
     });
 
-    // ✅ Đặt vé (click)
     document.querySelector("#booking").addEventListener("click", function (e) {
         let fullname = document.querySelector("#fullname").value.trim();
         let phone = document.querySelector("#phone").value.trim();
@@ -334,7 +333,6 @@ document.addEventListener("click", function (e) {
 
         const total = ticketPrice * selectedSeats.length;
 
-        // ✅ Tạo URL đúng cách
         const url = '@Url.Action("Handle_Book_Ticket","Ticket")'
             + '?tripID=@Model.TripID'
             + '&seats=' + encodeURIComponent(selectedSeats.join(','))

@@ -70,7 +70,7 @@ namespace Ticket_Booking_System.Controllers
 
             var seatList = seats.Split(',').Select(s => s.Trim()).ToList();
 
-            // ✅ Đặt ghế sang Pending qua repository
+            // Đặt ghế sang Pending qua repository
             var bookedSeats = await _tripRepository.MarkSeatsPendingAsync(tripID, seatList);
             var failedSeats = seatList.Except(bookedSeats).ToList();
 
@@ -134,7 +134,6 @@ namespace Ticket_Booking_System.Controllers
             var trip = await _tripRepository.GetByIdAsync(tripID);
             if (trip == null) return HttpNotFound("Không tìm thấy chuyến xe.");
 
-            // 🟠 Hủy vé
             if (action == "cancel")
             {
                 await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Available");
@@ -143,14 +142,11 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // 🟢 Xác nhận thanh toán → cập nhật Booked
             await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Booked");
 
-            // ✅ Lấy thông tin người dùng
             var userID = Session["UserID"] as string;
             var user = !string.IsNullOrEmpty(userID) ? await _userRepository.GetByIdAsync(userID) : null;
 
-            // ✅ Tạo hóa đơn
             var bill = new Bill
             {
                 BillID = "BILL" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper(),
@@ -204,12 +200,6 @@ namespace Ticket_Booking_System.Controllers
             return View("~/Views/Pay/PaymentSuccess.cshtml", bill);
         }
 
-        //public ActionResult BookingResult()
-        //{
-
-        //    return View();
-        //}
-
         public async Task<ActionResult> RollbackBooking(string seats, string tripId)
         {
             if (string.IsNullOrEmpty(tripId) || string.IsNullOrEmpty(seats))
@@ -229,7 +219,6 @@ namespace Ticket_Booking_System.Controllers
                 }
             }
 
-            // Dùng Builders.Update để cập nhật chính xác vào MongoDB
             var update = Builders<Trip>.Update
                 .Set(t => t.ListTicket, trip.ListTicket)
                 .Set(t => t.RemainingSeats, trip.RemainingSeats);

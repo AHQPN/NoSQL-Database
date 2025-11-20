@@ -64,7 +64,6 @@ namespace Ticket_Booking_System.Controllers
             Session["UserName"] = usr.Name;
             Session["Role"] = usr.Role;
 
-            // Nếu có avatar
             Session["Avatar"] = string.IsNullOrEmpty(usr.Image)
                 ? "/Content/images/default-avatar.png"
                 : usr.Image;

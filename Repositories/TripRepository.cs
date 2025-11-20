@@ -112,7 +112,6 @@ namespace Ticket_Booking_System.Repositories
 
             if (toStatus == "Available" && result.ModifiedCount > 0)
             {
-                // Xóa BookingDate
                 var unsetBookingDate = Builders<Trip>.Update
                     .Unset("ListTicket.$[elem].BookingDate");
 

@@ -1,5 +1,4 @@
-﻿/* === Body & Navbar === */
-body {
+﻿body {
     padding-top: 70px;
     overflow-x: hidden;
     background: #fdf6f0;
@@ -38,7 +37,6 @@ body {
         transform: translateY(-2px);
     }
 
-/* === Sidebar Desktop === */
 .sidebar {
     position: fixed;
     top: 70px;
@@ -61,7 +59,6 @@ body {
         border-radius: 3px;
     }
 
-    /* User info */
     .sidebar .user-info {
         display: flex;
         flex-direction: column;
@@ -88,7 +85,6 @@ body {
             margin: 0;
         }
 
-    /* Sidebar nav */
     .sidebar .nav-link {
         color: #333;
         padding: 1rem 1.5rem;
@@ -117,7 +113,6 @@ body {
             width: 30px;
         }
 
-/* === Main Content === */
 .main-content {
     margin-left: 260px;
     padding: 2rem;
@@ -131,7 +126,6 @@ body {
         color: #ff7300;
     }
 
-/* === Stat card === */
 .stat-card {
     padding: 1.5rem;
     border-radius: 12px;
@@ -154,11 +148,10 @@ body {
     }
 
     .stat-card.tickets-today {
-        background-color: #00b74a; /* xanh lá FUTA */
+        background-color: #00b74a; 
         color: white;
     }
 
-/* === Offcanvas Mobile Sidebar === */
 .offcanvas {
     width: 280px;
 }
@@ -197,7 +190,6 @@ body {
         width: 30px;
     }
 
-/* === Responsive adjustments === */
 @media (max-width: 991.98px) {
     .main-content {
         margin-left: 0;
@@ -218,10 +210,10 @@ body {
 }
 
 .ticket-card {
-    background-color: #fff; /* nền trắng */
-    border-left: 6px solid #00b74a; /* viền xanh lá FUTA bên trái */
-    border-radius: 10px; /* bo góc */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* bóng nổi */
+    background-color: #fff;
+    border-left: 6px solid #00b74a;
+    border-radius: 10px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -231,11 +223,11 @@ body {
     }
 
     .ticket-card .card-title {
-        font-size: 1.2rem; /* chữ tiêu đề lớn hơn */
-        color: #00b74a; /* xanh lá */
+        font-size: 1.2rem; 
+        color: #00b74a; 
     }
 
     .ticket-card .card-text {
-        font-size: 2.5rem; /* chữ số lớn */
+        font-size: 2.5rem; 
         color: #333;
     }
