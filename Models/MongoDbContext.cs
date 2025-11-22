@@ -21,7 +21,10 @@ namespace Ticket_Booking_System.Models
         public IMongoCollection<Station> Station => _database.GetCollection<Station>("Station");
         public IMongoCollection<Bill> Bill => _database.GetCollection<Bill>("Bill");
         public IMongoCollection<News> News => _database.GetCollection<News>("News");
-
+        public IMongoDatabase GetDatabase()
+        {
+            return _database;
+        }
     }
 }
 

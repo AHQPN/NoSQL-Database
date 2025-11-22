@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using Ticket_Booking_System.Infrastructure;
 
 namespace Ticket_Booking_System
 {
@@ -16,6 +17,10 @@ namespace Ticket_Booking_System
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            JobScheduler.Start();
+
+            RedisManager.Initialize("localhost:6379");
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Ticket_Booking_System.Controllers
             var userId = Session["UserID"].ToString();
             // Lọc các hóa đơn của user này
             var filter = Builders<Bill>.Filter.Eq(b => b.Customer.CustomerID, userId);
-            var bills = await _dbContext.Bill.Find(_=>true).ToListAsync();
+            var bills = await _dbContext.Bill.Find(filter).ToListAsync();
             return View(bills);
         }
         [HttpPost]
@@ -82,7 +82,5 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.Customer = customer;
             return View();
         }
-
-
     }
 }

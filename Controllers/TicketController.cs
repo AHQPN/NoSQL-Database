@@ -9,11 +9,13 @@ using System.Web;
 using System.Web.Mvc;
 using Ticket_Booking_System.Models;
 using Ticket_Booking_System.Repositories;
+using Ticket_Booking_System.Infrastructure;
 
 namespace Ticket_Booking_System.Controllers
 {
     public class TicketController : Controller
     {
+        private const int PendingTtl = 900;
         // GET: Ticket
         private readonly IUserRepository _userRepository;
         private readonly ITripRepository _tripRepository;
@@ -25,6 +27,14 @@ namespace Ticket_Booking_System.Controllers
             _userRepository = new UserRepository(dbContext.User.Database);
             _tripRepository = new TripRepository(dbContext.Trip.Database);
             _billRepository = new BillRepository(dbContext.Bill.Database);
+
+            try
+            {
+                RedisManager.Initialize("localhost:6379");
+            }
+            catch 
+            {
+            }
         }
         public ActionResult Index()
         {
@@ -56,6 +66,9 @@ namespace Ticket_Booking_System.Controllers
             User usr = await _userRepository.GetByIdAsync(customerID);
             ViewBag.userInfo = usr;
 
+            var reserved = await RedisManager.GetReservedSeatsAsync(tripID);
+            ViewBag.RedisReservedSeats = reserved;
+
             return View(trip);
         }
 
@@ -69,34 +82,37 @@ namespace Ticket_Booking_System.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Thiếu thông tin chuyến đi hoặc ghế.");
 
             var seatList = seats.Split(',').Select(s => s.Trim()).ToList();
+            var bookingId = Guid.NewGuid().ToString("N");
 
-            // Đặt ghế sang Pending qua repository
-            var bookedSeats = await _tripRepository.MarkSeatsPendingAsync(tripID, seatList);
-            var failedSeats = seatList.Except(bookedSeats).ToList();
+            var reserved = await RedisManager.ReserveSeatsAsync(tripID, seatList, bookingId, TimeSpan.FromSeconds(PendingTtl));
+            var failed = seatList.Except(reserved).ToList();
+
+            if (reserved.Any())
+            {
+                await (_tripRepository as TripRepository).MarkSeatsPendingInMongoAsync(tripID, reserved.ToList());
+            }
 
             var bookingResult = new BookingResultViewModel
             {
                 TripID = tripID,
-                BookingID = Guid.NewGuid().ToString("N"),
-                BookedSeats = bookedSeats,
-                FailedSeats = failedSeats,
+                BookingID = bookingId,
+                BookedSeats = reserved.ToList(),
+                FailedSeats = failed,
                 ExpireTime = DateTime.Now.AddMinutes(15)
             };
 
-            // Nếu có ghế đặt thành công → sang trang thanh toán
-            if (bookedSeats.Count > 0)
+            if (reserved.Any())
             {
                 return RedirectToAction("ThanhToan", new
                 {
                     tripID,
-                    seats = string.Join(",", bookedSeats),
+                    seats = string.Join(",", reserved),
                     fullname,
                     phone,
                     total
                 });
             }
 
-            // Nếu không đặt được ghế nào
             TempData["Message"] = "Tất cả ghế đã được đặt trước.";
             TempData["MessageType"] = "error";
             return View("BookingResult", bookingResult);
@@ -125,7 +141,7 @@ namespace Ticket_Booking_System.Controllers
 
         // Xác nhận thanh toán
         [HttpPost]
-        public async Task<ActionResult> PaymentConfirm(string tripID, string seats, string fullname, string phone, string action)
+        public async Task<ActionResult> PaymentConfirm(string tripID, string seats, string fullname, string phone, string bookingId, string action)
         {
             if (string.IsNullOrEmpty(tripID) || string.IsNullOrEmpty(seats))
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -136,11 +152,15 @@ namespace Ticket_Booking_System.Controllers
 
             if (action == "cancel")
             {
+                await RedisManager.ReleaseSeatsAsync(tripID, seatList, bookingId);
                 await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Available");
+                
                 TempData["Message"] = "Đã hủy đặt vé.";
                 TempData["MessageType"] = "warning";
                 return RedirectToAction("Index", "Home");
             }
+
+            await RedisManager.ReleaseSeatsAsync(tripID, seatList, bookingId);
 
             await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Booked");
 
@@ -205,29 +225,17 @@ namespace Ticket_Booking_System.Controllers
             if (string.IsNullOrEmpty(tripId) || string.IsNullOrEmpty(seats))
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-            var trip = await _tripRepository.GetByIdAsync(tripId);
-            if (trip == null) return HttpNotFound("Không tìm thấy chuyến đi.");
 
             var seatList = seats.Split(',').Select(s => s.Trim()).ToList();
-            foreach (var seat in seatList)
-            {
-                var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
-                if (ticket != null && (ticket.Status == "Pending" || ticket.Status == "Booked"))
-                {
-                    ticket.Status = "Available";
-                    trip.RemainingSeats++;
-                }
-            }
 
-            var update = Builders<Trip>.Update
-                .Set(t => t.ListTicket, trip.ListTicket)
-                .Set(t => t.RemainingSeats, trip.RemainingSeats);
 
-            var filter = Builders<Trip>.Filter.Eq(t => t.TripID, trip.TripID);
-            await _tripRepository.UpdateAsync(filter, update);
+            await RedisManager.ReleaseSeatsAsync(tripId, seatList);
+            await _tripRepository.UpdateSeatStatusAsync(tripId, seatList, "Pending", "Available");
+
 
             TempData["Message"] = "Vé đã được hủy do hết thời gian thanh toán.";
-            return RedirectToAction("Book_Ticket", new { tripID = trip.TripID });
+            TempData["MessageType"] = "danger";
+            return RedirectToAction("Book_Ticket", new { tripID = tripId });
         }
     }
 }

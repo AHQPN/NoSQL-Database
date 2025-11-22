@@ -42,53 +42,33 @@ namespace Ticket_Booking_System.Repositories
         }
 
         // Cập nhật trạng thái ghế sang Pending
-        public async Task<List<string>> MarkSeatsPendingAsync(string tripId, List<string> seatNums)
+        public async Task MarkSeatsPendingInMongoAsync(string tripId, List<string> seatNums)
         {
-            if (seatNums == null || seatNums.Count == 0)
-                return new List<string>();
+            if (seatNums == null || seatNums.Count == 0) return;
 
             var now = DateTime.UtcNow;
+            var filter = Builders<Trip>.Filter.Eq(t => t.TripID, tripId);
 
-            var filter = Builders<Trip>.Filter.And(
-                Builders<Trip>.Filter.Eq(t => t.TripID, tripId),
-                Builders<Trip>.Filter.ElemMatch(t => t.ListTicket,
-                    tk => seatNums.Contains(tk.SeatNum) && tk.Status == "Available")
-            );
-
-            var update = Builders<Trip>.Update
-                .Set("ListTicket.$[elem].Status", "Pending")
+            var updates = new List<UpdateDefinition<Trip>>();
+            foreach (var seat in seatNums)
+            {
+                updates.Add(Builders<Trip>.Update.Set("ListTicket.$[elem].Status", "Pending")
                 .Set("ListTicket.$[elem].PendingAt", now)
-                .Set("ListTicket.$[elem].TicketID", "TK" + ObjectId.GenerateNewId().ToString().Substring(0, 5).ToUpper());
-
-            var arrayFilter = new[]
-            {
-                new JsonArrayFilterDefinition<BsonDocument>(
-                    "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': 'Available' }")
-            };
-
-            var options = new UpdateOptions { ArrayFilters = arrayFilter };
-
-            var result = await _trips.UpdateOneAsync(filter, update, options);
-
-            if (result.ModifiedCount == 0)
-                return new List<string>();
-
-            var trip = await GetByIdAsync(tripId);
-            if (trip == null) return new List<string>();
-
-            var updatedSeats = trip.ListTicket
-                .Where(t => seatNums.Contains(t.SeatNum) && t.Status == "Pending")
-                .Select(t => t.SeatNum)
-                .ToList();
-
-            if (updatedSeats.Count > 0)
-            {
-                var decUpdate = Builders<Trip>.Update.Inc(t => t.RemainingSeats, -updatedSeats.Count);
-                var filterTrip = Builders<Trip>.Filter.Eq(t => t.TripID, tripId);
-                await _trips.UpdateOneAsync(filterTrip, decUpdate);
+                .Set("ListTicket.$[elem].TicketID", "TK" + ObjectId.GenerateNewId().ToString().Substring(0, 5).ToUpper()));
             }
 
-            return updatedSeats;
+            var arrayFilter = new JsonArrayFilterDefinition<BsonDocument>(
+            "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': 'Available' }");
+
+            var update = Builders<Trip>.Update
+            .Set("ListTicket.$[elem].Status", "Pending")
+            .Set("ListTicket.$[elem].PendingAt", now)
+            .Set("ListTicket.$[elem].TicketID", "TK" + ObjectId.GenerateNewId().ToString().Substring(0, 5).ToUpper());
+
+            await _trips.UpdateOneAsync(filter, update, new UpdateOptions { ArrayFilters = new[] { arrayFilter } });
+
+            var dec = Builders<Trip>.Update.Inc(t => t.RemainingSeats, -seatNums.Count);
+            await _trips.UpdateOneAsync(filter, dec);
         }
 
         // Cập nhật trạng thái ghế
@@ -96,36 +76,31 @@ namespace Ticket_Booking_System.Repositories
         {
             if (seatNums == null || seatNums.Count == 0) return;
 
+
             var filter = Builders<Trip>.Filter.Eq(t => t.TripID, tripId);
+            var arrayFilter = new JsonArrayFilterDefinition<BsonDocument>(
+            "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': '" + fromStatus + "' }");
+
+
             var update = Builders<Trip>.Update
-                .Set("ListTicket.$[elem].Status", toStatus)
-                .Set("ListTicket.$[elem].BookingDate", DateTime.UtcNow);
+            .Set("ListTicket.$[elem].Status", toStatus)
+            .Set("ListTicket.$[elem].BookingDate", DateTime.UtcNow);
 
-            var arrayFilter = new[]
-            {
-                new JsonArrayFilterDefinition<BsonDocument>(
-                    "{ 'elem.SeatNum': { $in: " + seatNums.ToJson() + " }, 'elem.Status': '" + fromStatus + "' }")
-            };
 
-            var options = new UpdateOptions { ArrayFilters = arrayFilter };
+            var options = new UpdateOptions { ArrayFilters = new[] { arrayFilter } };
             var result = await _trips.UpdateOneAsync(filter, update, options);
+
 
             if (toStatus == "Available" && result.ModifiedCount > 0)
             {
-                var unsetBookingDate = Builders<Trip>.Update
-                    .Unset("ListTicket.$[elem].BookingDate");
+                var unsetBookingDate = Builders<Trip>.Update.Unset("ListTicket.$[elem].BookingDate");
+                await _trips.UpdateOneAsync(filter, unsetBookingDate, new UpdateOptions { ArrayFilters = new[] { arrayFilter } });
 
-                await _trips.UpdateOneAsync(filter, unsetBookingDate, new UpdateOptions
-                {
-                    ArrayFilters = arrayFilter
-                });
 
                 var trip = await GetByIdAsync(tripId);
                 if (trip != null)
                 {
-                    var availableNow = trip.ListTicket
-                        .Count(t => seatNums.Contains(t.SeatNum) && t.Status == "Available");
-
+                    var availableNow = trip.ListTicket.Count(t => seatNums.Contains(t.SeatNum) && t.Status == "Available");
                     if (availableNow > 0)
                     {
                         var inc = Builders<Trip>.Update.Inc(t => t.RemainingSeats, availableNow);
@@ -133,6 +108,7 @@ namespace Ticket_Booking_System.Repositories
                     }
                 }
             }
+
 
             if (toStatus == "Booked" && result.ModifiedCount > 0)
             {
