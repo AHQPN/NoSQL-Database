@@ -24,8 +24,8 @@ namespace Ticket_Booking_System.Models
         [BsonElement("Capacity")]
         public int Capacity { get; set; }
 
-        [BsonElement("UserID")]
-        public string UserID { get; set; }
+        [BsonElement("LicensePlate")]
+        public string LicensePlate { get; set; }
         [BsonElement("Driver")]
         public Driver Driver { get; set; }
     }

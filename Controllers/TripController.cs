@@ -52,21 +52,38 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.SoVe = SoVe;
 
             var startDate = txtDate.Date;
-            var endDate = startDate.AddDays(1); 
+            var endDate = startDate.AddDays(1);
 
             DateTime now = DateTime.Now;
 
-            var query = _context.Trip.Find(
-                t => t.RoadMap.First().City == FromCity &&
-                     t.RoadMap.Any(r => r.City == ToCity) &&
-                     t.DepartureTime >= startDate &&
-                     t.DepartureTime < endDate
-            ).ToList();
+            // Sửa logic: Lấy toàn bộ trip trước, rồi filter trong code
+            var allTrips = _context.Trip.Find(_ => true).ToList();
 
-            if (txtDate.Date == now.Date)
+            var query = allTrips.Where(t =>
             {
-                query = query.Where(t => t.DepartureTime >= now).ToList();
-            }
+                // Kiểm tra RoadMap có chứa FromCity và ToCity theo đúng thứ tự
+                var roadMapCities = t.RoadMap?.Select(r => r.City).ToList();
+                if (roadMapCities == null || roadMapCities.Count < 2)
+                    return false;
+
+                int fromIndex = roadMapCities.IndexOf(FromCity);
+                int toIndex = roadMapCities.IndexOf(ToCity);
+
+                // FromCity phải ở vị trí đầu tiên và ToCity phải đến sau
+                if (fromIndex == -1 || toIndex == -1 || fromIndex >= toIndex)
+                    return false;
+
+                // Kiểm tra thời gian
+                if (t.DepartureTime < startDate || t.DepartureTime >= endDate)
+                    return false;
+
+                // Nếu là hôm nay, chỉ lấy những chuyến khởi hành sau thời điểm hiện tại
+                if (txtDate.Date == now.Date && t.DepartureTime < now)
+                    return false;
+
+                return true;
+            }).ToList();
+
             var vehicles = _context.Vehicle.Find(_ => true).ToList();
 
             var result = query.Select(t =>
@@ -87,10 +104,10 @@ namespace Ticket_Booking_System.Controllers
             .ToList();
 
             var cities = _context.Station.AsQueryable()
-                           .Select(s => s.City)
-                           .Distinct()
-                           .OrderBy(c => c)
-                           .ToList();
+                               .Select(s => s.City)
+                               .Distinct()
+                               .OrderBy(c => c)
+                               .ToList();
             ViewBag.Cities = cities;
 
             return View("FindTrip", result);
