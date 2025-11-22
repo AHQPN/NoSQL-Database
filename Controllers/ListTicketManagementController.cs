@@ -38,7 +38,7 @@ namespace Ticket_Booking_System.Controllers
             return View();
         }
         [HttpGet]
-        public async Task<JsonResult> GetTrips(int page = 1, int pageSize = 10, string search = "", string sortBy = "DepartureTime", string sortOrder = "asc")
+        public async Task<JsonResult> GetTrips( int page = 1, int pageSize = 10, string search = "", string sortBy = "DepartureTime", string sortOrder = "asc", string city = "", string date = "")
         {
             try
             {
@@ -46,7 +46,29 @@ namespace Ticket_Booking_System.Controllers
 
                 var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
 
-                // search filter
+                // Filter by city (check if any station in RoadMap matches)
+                if (!string.IsNullOrEmpty(city))
+                {
+                    allTrips = allTrips.Where(t =>
+                        t.RoadMap != null &&
+                        t.RoadMap.Any(s => s.City.Equals(city, StringComparison.OrdinalIgnoreCase))
+                    ).ToList();
+                }
+
+                // Filter by date
+                if (!string.IsNullOrEmpty(date))
+                {
+                    DateTime filterDate;
+                    if (DateTime.TryParse(date, out filterDate))
+                    {
+                        // Lọc theo ngày (bỏ qua giờ)
+                        allTrips = allTrips.Where(t =>
+                            t.DepartureTime.Date == filterDate.Date
+                        ).ToList();
+                    }
+                }
+
+                // Search filter
                 if (!string.IsNullOrEmpty(search))
                 {
                     allTrips = allTrips.Where(t =>
@@ -55,7 +77,7 @@ namespace Ticket_Booking_System.Controllers
                     ).ToList();
                 }
 
-                // sorting
+                // Sorting
                 switch (sortBy)
                 {
                     case "TripID":
@@ -108,6 +130,45 @@ namespace Ticket_Booking_System.Controllers
             catch (Exception ex)
             {
                 return Json(new PaginatedResultViewModel<TripViewModel>
+                {
+                    Success = false,
+                    Message = ex.Message
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        [HttpGet]
+        public async Task<JsonResult> GetStations()
+        {
+            try
+            {
+                var now = DateTime.Now;
+
+                var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
+                //var allTrips = await _tripRepository.GetAllAsync();
+
+                var uniqueStations = allTrips
+                    .Where(t => t.RoadMap != null && t.RoadMap.Any())
+                    .SelectMany(t => t.RoadMap)
+                    .GroupBy(s => new { s.StationID, s.City, s.StationName })
+                    .Select(g => new
+                    {
+                        StationID = g.Key.StationID,
+                        City = g.Key.City,
+                        StationName = g.Key.StationName
+                    })
+                    .OrderBy(s => s.City)
+                    .ThenBy(s => s.StationName)
+                    .ToList();
+
+                return Json(new
+                {
+                    Success = true,
+                    Data = uniqueStations
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
                 {
                     Success = false,
                     Message = ex.Message

@@ -6,16 +6,68 @@
 <link href="~/Content/css/ListTicketManagement.css" rel="stylesheet" />
 
 <div class="container-fluid mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
+    <div class="row mb-3">
+        <div class="col-md-6">
             <h3><i class="fas fa-bus me-2"></i>Quản lý chuyến xe</h3>
         </div>
-        <div class="col-md-4">
-            <div class="input-group search-box float-end">
-                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm chuyến xe...">
-                <button class="btn btn-primary" id="btnSearch">
-                    <i class="fas fa-search"></i>
+        <div class="col-md-6">
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" id="btnReload" title="Tải lại dữ liệu" style="background-color: white; border: solid 1px #bfafaf ">
+                    <i class="fas fa-sync-alt" style="color: black"></i>
                 </button>
+                <div class="input-group search-box">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm chuyến xe...">
+                    <button class="btn btn-primary" id="btnSearch">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="fas fa-map-marker-alt me-1"></i>Điểm đi/đến:</label>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="fas fa-calendar me-1"></i>Ngày khởi hành:</label>
+                        </div>
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="filterCity" class="form-select" style="height: 35px">
+                                <option value="">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" id="filterDate" class="form-control" style="height: 35px">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="filterAllDates" checked>
+                                <label class="form-check-label" for="filterAllDates">
+                                    Tất cả ngày
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary flex-fill" id="btnApplyFilter">
+                                    <i class="fas fa-filter me-1"></i>Áp dụng
+                                </button>
+                                <button class="btn btn-outline-secondary flex-fill" id="btnClearFilter">
+                                    <i class="fas fa-times me-1"></i>Xóa lọc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -42,7 +94,7 @@
                                 </a>
                             </th>
                             <th>Giờ đến</th>
-                            <th>Chỗ trống còn lại</th>
+                            <th>Chỗ trống</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
@@ -169,6 +221,31 @@
         let currentTickets = [];
         let currentFilter = 'all';
         let expandedTicketId = null;
+        let filterCity = '';
+        let filterDate = '';
+
+        function loadStations() {
+            $.ajax({
+                url: '@Url.Action("GetStations", "ListTicketManagement")',
+                type: 'GET',
+                success: function (response) {
+                    if (response.Success || response.success) {
+                        let stations = response.Data || response.data;
+                        let html = '<option value="">-- Tất cả --</option>';
+
+                        stations.forEach(function(station) {
+                            let displayText = `${station.City} (${station.StationName})`;
+                            html += `<option value="${station.City}">${displayText}</option>`;
+                        });
+
+                        $('#filterCity').html(html);
+                    }
+                },
+                error: function (xhr, status, errorThrown) {
+                    console.error('Error loading stations:', errorThrown);
+                }
+            });
+        }
 
         function parseJsonDate(dateString) {
             if (!dateString) return 'N/A';
@@ -205,16 +282,28 @@
 
         function loadTrips() {
             console.log('Loading trips...');
+
+            let requestData = {
+                page: currentPage,
+                pageSize: pageSize,
+                search: searchTerm,
+                sortBy: sortBy,
+                sortOrder: sortOrder
+            };
+
+            // Add filter parameters
+            if (filterCity) {
+                requestData.city = filterCity;
+            }
+
+            if (filterDate && !$('#filterAllDates').is(':checked')) {
+                requestData.date = filterDate;
+            }
+
             $.ajax({
                 url: '@Url.Action("GetTrips", "ListTicketManagement")',
                 type: 'GET',
-                data: {
-                    page: currentPage,
-                    pageSize: pageSize,
-                    search: searchTerm,
-                    sortBy: sortBy,
-                    sortOrder: sortOrder
-                },
+                data: requestData,
                 success: function (response) {
                     console.log('Response:', response);
                     if (response.Success || response.success) {
@@ -342,7 +431,7 @@
                     let statusText = ticket.Status === 'Available' ? 'Còn trống' : 'Đã đặt';
                     let actionBtn = ticket.Status === 'Booked'
                         ? `<button class="btn btn-sm btn-primary view-customer-inline" data-ticketid="${ticket.TicketID}">
-                                <i class="fas fa-chevron-right expand-icon me-1"></i>Xem thông tin Khách đặt 
+                                <i class="fas fa-chevron-right expand-icon me-1"></i>Xem thông tin
                            </button>`
                         : `<span style="color: #28a745;"><i class="fas fa-check-circle me-1"></i>Còn trống</span>`;
 
@@ -495,6 +584,66 @@
             expandedTicketId = null;
         });
 
+        //$('#btnReload').click(function () {
+        //    $(this).find('i').addClass('fa-spin');
+        //    loadTrips();
+        //    setTimeout(() => {
+        //        $(this).find('i').removeClass('fa-spin');
+        //    }, 500);
+        //});
+        $('#btnReload').click(function () {
+            $('#searchInput').val('');
+            searchTerm = '';
+
+            $('#filterCity').val('');
+            $('#filterDate').val('');
+            $('#filterAllDates').prop('checked', true);
+            filterCity = '';
+            filterDate = '';
+
+            currentPage = 1;
+
+            $(this).find('i').addClass('fa-spin');
+            loadTrips();
+            setTimeout(() => {
+                $(this).find('i').removeClass('fa-spin');
+            }, 500);
+        });
+
+        $('#btnApplyFilter').click(function () {
+            filterCity = $('#filterCity').val();
+
+            if (!$('#filterAllDates').is(':checked')) {
+                filterDate = $('#filterDate').val();
+            } else {
+                filterDate = '';
+            }
+
+            currentPage = 1;
+            loadTrips();
+        });
+
+        $('#btnClearFilter').click(function () {
+            $('#filterCity').val('');
+            $('#filterDate').val('');
+            $('#filterAllDates').prop('checked', true);
+            filterCity = '';
+            filterDate = '';
+            currentPage = 1;
+            loadTrips();
+        });
+
+        $('#filterAllDates').change(function () {
+            if ($(this).is(':checked')) {
+                $('#filterDate').prop('disabled', true);
+                $('#filterDate').val('');
+            } else {
+                $('#filterDate').prop('disabled', false);
+            }
+        });
+
+        $('#filterDate').prop('disabled', true);
+
         $('#btnSearch').click(function () {
             searchTerm = $('#searchInput').val();
             currentPage = 1;
@@ -542,6 +691,7 @@
             loadTrips();
         });
 
+        loadStations();
         loadTrips();
     });
 </script>
