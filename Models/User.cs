@@ -32,8 +32,8 @@ namespace Ticket_Booking_System.Models
         public string Sex { get; set; }
 
         [BsonIgnoreIfNull]
-        [BsonElement("Email")]
-        public string Email { get; set; }
+        [BsonElement("PhoneNum")]
+        public string PhoneNum { get; set; }
 
         [BsonIgnoreIfNull]
         [BsonElement("Status")]

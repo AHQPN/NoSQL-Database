@@ -157,12 +157,12 @@
                             <div class="col-md-2">
                                 <label for="tickets" class="form-label">Số vé</label>
                                 @*<select name="SoVe" id="tickets" class="form-select info-ticket">
-                            <option value="1" selected>1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>*@
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>*@
                                 <select name="SoVe" id="tickets" class="form-select info-ticket">
                                     @for (int i = 1; i <= 5; i++)
                                     {
@@ -263,8 +263,8 @@
             </button>
             <div class="header-form-text text-center co-6 fs-2">Đăng nhập</div>
             <div class="my-5">
-               <input type="email" name="email" class="form-control-lg form-control" id="Phone-number-login"
-                       placeholder="Email">
+                <input type="tel" name="numberphone" class="form-control-lg form-control" id="Phone-number-login"
+                       placeholder="Số điện thoại">
                 <span class="form-message"></span>
             </div>
             <div class="my-5">
@@ -296,18 +296,13 @@
             <button type="button" class="close-form border-0 p-0 " aria-label="Close" onclick="closeRegisterForm()">
                 <span class="fs-2" aria-hidden="true">&times;</span>
             </button>
-
-
             <div class="header-form-text text-center co-6 fs-2">Đăng ký</div>
-
-
             <div class="my-3">
                 <input type="text" name="tenkh" class="form-control" id="tenkh" placeholder="Họ Tên">
                 <span class="form-message"></span>
             </div>
             <div class="my-3 form-group">
-
-                <input name="email" type="text" class=" form-control" id="Phone-number" placeholder="Email">
+                <input name="numberphone" type="tel" class="form-control" id="Phone-number" placeholder="Số điện thoại">
                 <span class="form-message"></span>
             </div>
             <div class="my-3 form-group">
@@ -362,7 +357,7 @@
          document.addEventListener("DOMContentLoaded", function() {
             var showLogin = '@TempData["ShowLogin"]';
             if (showLogin === 'True') {
-                showLoginForm(); 
+                showLoginForm();
             }
         });
     </script>
@@ -370,7 +365,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var showRegister = '@TempData["ShowRegister"]';
             if (showRegister === 'True') {
-                showRegisterForm(); 
+                showRegisterForm();
           }
         });
     </script>
@@ -378,7 +373,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     var showRegister = '@ViewBag.ShowRegister';
     if (showRegister === 'True') {
-        showRegisterForm(); 
+        showRegisterForm();
     }
 });
 

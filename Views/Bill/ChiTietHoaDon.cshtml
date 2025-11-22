@@ -15,13 +15,15 @@
             <h5 class="text-secondary mb-3">Thông tin khách hàng</h5>
             <ul class="list-group mb-4">
                 <li class="list-group-item"><strong>Tên:</strong> @customer.Name</li>
-                <li class="list-group-item"><strong>Email:</strong> @customer.Email</li>
+                <li class="list-group-item"><strong>Số điện thoại:</strong> @customer.PhoneNum</li>
                 <li class="list-group-item"><strong>Địa chỉ:</strong> @customer.Address</li>
             </ul>
 
             <h5 class="text-secondary mb-3">Thông tin hóa đơn</h5>
             <ul class="list-group mb-4">
-                <li class="list-group-item"><strong>Ngày tạo:</strong> @bill.CreateAt</li>
+                <li class="list-group-item">
+                    <strong>Ngày tạo:</strong> @bill.CreateAt.ToString("dd/MM/yyyy")
+                </li>
                 <li class="list-group-item"><strong>Tổng tiền:</strong> @bill.Total.ToString("N0") VNĐ</li>
                 <li class="list-group-item"><strong>Số lượng vé:</strong> @bill.Quantity</li>
             </ul>

@@ -37,7 +37,6 @@ namespace Ticket_Booking_System.Controllers
                     Name = "Customer",
                     Password = hashedPassword,
                     Address = "HCM",
-                    Email = "customer@example.com",
                     Image = "",
                     Role = "Customer"
                 },
@@ -48,7 +47,6 @@ namespace Ticket_Booking_System.Controllers
                     Password = hashedPassword,
                     Address = "Da Nang",
                     Sex = "Male",
-                    Email = "driver@example.com",
                     Status = "Active",
                     Image = "",
                     Role = "Driver"
@@ -60,7 +58,6 @@ namespace Ticket_Booking_System.Controllers
                     Password = hashedPassword,
                     Address = "Can Tho",
                     Sex = "Female",
-                    Email = "agent@example.com",
                     Status = "Active",
                     Image = "",
                     Role = "TicketAgent"

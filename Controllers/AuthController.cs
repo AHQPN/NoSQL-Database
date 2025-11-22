@@ -39,23 +39,23 @@ namespace Ticket_Booking_System.Controllers
         public async Task<ActionResult> Login(FormCollection form)
         {
 
-            string gmail = form["email"];
+            string sdt = form["numberphone"];
             string rawPassword = form["pw"];
-            if (string.IsNullOrEmpty(gmail) || string.IsNullOrEmpty(rawPassword))
+            if (string.IsNullOrEmpty(sdt) || string.IsNullOrEmpty(rawPassword))
             {
-                ViewBag.Error = "Vui lòng nhập đầy đủ email và mật khẩu!";
+                ViewBag.Error = "Vui lòng nhập đầy đủ tài khoản và mật khẩu!";
                 TempData["ShowLogin"] = true;
                 return View("Login");
             }
 
             var usr = await _dbContext.User
-                              .Find(u => u.Email == gmail && u.Password==rawPassword)
+                              .Find(u => u.PhoneNum == sdt && u.Password==rawPassword)
                               .FirstOrDefaultAsync();
 
 
             if (usr == null )
             {
-                ViewBag.Error = "email hoặc mật khẩu không đúng!";
+                ViewBag.Error = "Tài khoản hoặc mật khẩu không đúng!";
                 TempData["ShowLogin"] = true;
                 return View("Login");
             }
@@ -71,7 +71,7 @@ namespace Ticket_Booking_System.Controllers
             switch (usr.Role)
             {
                 case "TicketAgent": return RedirectToAction("Dashboard", "TicketAgent");
-                case "Admin": return RedirectToAction("AdminSite", "Home");
+                case "Admin": return RedirectToAction("ThongKe", "Admin");
                 case "Driver": return RedirectToAction("DriverSite", "Home");
                 default: return RedirectToAction("Index", "Home");
             }
@@ -95,18 +95,14 @@ namespace Ticket_Booking_System.Controllers
             userID = userID + formattedNumber;
             usr.UserID = userID;
             usr.Name = a["tenkh"];
-            usr.Email = a["Email"];
+            usr.PhoneNum = a["numberphone"];
             usr.Address = a["Address"];
             usr.Password = a["pw"];
             usr.Role = "Customer";
-            var existingUser = _users.FirstOrDefault(u => u.Email == usr.Email);
-            if (string.IsNullOrEmpty(usr.Name) || string.IsNullOrEmpty(usr.Email) || string.IsNullOrEmpty(usr.Password) || string.IsNullOrEmpty(usr.Email) || string.IsNullOrEmpty(usr.Address))
+            var existingUser = _users.FirstOrDefault(u => u.PhoneNum == usr.PhoneNum);
+            if (string.IsNullOrEmpty(usr.Name) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Password) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Address))
             {
                 return ErrorRegister("Không để trống các trường.",usr);
-            }
-            else if ( !regex.IsMatch(usr.Email))
-            {
-                return ErrorRegister("Email không đúng định dạng.", usr);
             }
             else if (existingUser != null)
             {

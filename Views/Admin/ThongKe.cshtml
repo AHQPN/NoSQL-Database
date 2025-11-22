@@ -1,0 +1,326 @@
+﻿
+@{
+    ViewBag.Title = "ThongKe";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+    var GetThongKe = ViewBag.GetThongKe;
+    var GetTopTrips = ViewBag.GetTopTrips;
+}
+
+<!-- STATS CARDS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@GetThongKe.TongVeBanTrongThang</h3>
+            <p>Vé đã bán (tháng này)</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@String.Format("{0:N2} triệu", @GetThongKe.TongDoanhThuTrongThang / 1_000_000)</h3>
+            <p>Doanh thu (tháng này)</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-chair"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@GetThongKe.SoLuongGheConTrong</h3>
+            <p>Ghế còn trống</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i class="fas fa-route"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@GetThongKe.LoTrinhHoatDong</h3>
+            <p>Lộ trình hoạt động</p>
+        </div>
+    </div>
+</div>
+
+<!-- QUẢN LÝ LỘ TRÌNH -->
+<div class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-route"></i> Quản lý lộ trình</h2>
+        <button class="btn btn-primary" onclick="openModal('routeModal')">
+            <i class="fas fa-plus"></i> Thêm lộ trình
+        </button>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label>Điểm đi</label>
+            <select>
+                <option value="">Tất cả</option>
+                <option>TP. Hồ Chí Minh</option>
+                <option>Hà Nội</option>
+                <option>Đà Nẵng</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Điểm đến</label>
+            <select>
+                <option value="">Tất cả</option>
+                <option>Đà Lạt</option>
+                <option>Nha Trang</option>
+                <option>Vũng Tàu</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Trạng thái</label>
+            <select>
+                <option value="">Tất cả</option>
+                <option>Hoạt động</option>
+                <option>Tạm dừng</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã lộ trình</th>
+                    <th>Điểm đi</th>
+                    <th>Điểm đến</th>
+                    <th>Khoảng cách</th>
+                    <th>Thời gian</th>
+                    <th>Giá vé</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>LT001</strong></td>
+                    <td>TP. Hồ Chí Minh</td>
+                    <td>Đà Lạt</td>
+                    <td>300 km</td>
+                    <td>6 giờ</td>
+                    <td>250,000 VNĐ</td>
+                    <td><span class="badge badge-success">Hoạt động</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="editRoute()">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteRoute()">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>LT002</strong></td>
+                    <td>TP. Hồ Chí Minh</td>
+                    <td>Nha Trang</td>
+                    <td>450 km</td>
+                    <td>8 giờ</td>
+                    <td>300,000 VNĐ</td>
+                    <td><span class="badge badge-success">Hoạt động</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>LT003</strong></td>
+                    <td>Hà Nội</td>
+                    <td>Hải Phòng</td>
+                    <td>120 km</td>
+                    <td>2.5 giờ</td>
+                    <td>150,000 VNĐ</td>
+                    <td><span class="badge badge-warning">Tạm dừng</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- THỐNG KÊ -->
+<!--<div class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-chart-bar"></i> Thống kê doanh thu</h2>
+        <div class="filters" style="margin: 0;">
+            <select>
+                <option>Tháng này</option>
+                <option>Tháng trước</option>
+                <option>Quý này</option>
+                <option>Năm nay</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-container">
+            <i class="fas fa-chart-line" style="font-size: 48px; opacity: 0.3;"></i>
+            <p>Biểu đồ doanh thu theo tháng</p>
+        </div>
+        <div class="chart-container">
+            <i class="fas fa-chart-pie" style="font-size: 48px; opacity: 0.3;"></i>
+            <p>Biểu đồ tỷ lệ vé bán theo lộ trình</p>
+        </div>
+    </div>
+</div>-->
+<!-- TOP LỘ TRÌNH -->
+<div class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-fire"></i> Top lộ trình bán chạy</h2>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Thứ hạng</th>
+                    <th>Lộ trình</th>
+                    <th>Số vé đã bán</th>
+                    <th>Doanh thu</th>
+                    <th>Tỷ lệ lấp đầy</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in GetTopTrips)
+                {
+                    <tr>
+                        <td><strong style="color: #f59e0b;">#@item.ThuHang</strong></td>
+                        <td>@item.LoTrinh</td>
+                        <td>@item.SoVeDaBan</td>
+                        <td>@item.DoanhThu</td>
+                        @if (item.TyLeLapDay >= 80)
+                        {
+                            <td><span class="badge badge-success">@item.TyLeLapDay%</span></td>
+                        }
+                        else
+                        {
+                            <td><span class="badge badge-warning">@item.TyLeLapDay%</span></td>
+                        }
+                    </tr>
+                }
+                @*<tr>
+                        <td><strong style="color: #6b7280;">#2</strong></td>
+                        <td>TP.HCM → Nha Trang</td>
+                        <td>312 vé</td>
+                        <td>93,600,000 VNĐ</td>
+                        <td><span class="badge badge-success">88%</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color: #cd7f32;">#3</strong></td>
+                        <td>Hà Nội → Hạ Long</td>
+                        <td>245 vé</td>
+                        <td>49,000,000 VNĐ</td>
+                        <td><span class="badge badge-warning">76%</span></td>
+                    </tr>*@
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- MODAL THÊM/SỬA LỘ TRÌNH -->
+<div class="modal" id="routeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Thêm lộ trình mới</h2>
+            <button class="modal-close" onclick="closeModal('routeModal')">×</button>
+        </div>
+        <form>
+            <div class="form-group">
+                <label>Điểm đi <span style="color: red;">*</span></label>
+                <input type="text" placeholder="Ví dụ: TP. Hồ Chí Minh" required>
+            </div>
+            <div class="form-group">
+                <label>Điểm đến <span style="color: red;">*</span></label>
+                <input type="text" placeholder="Ví dụ: Đà Lạt" required>
+            </div>
+            <div class="form-group">
+                <label>Khoảng cách (km) <span style="color: red;">*</span></label>
+                <input type="number" placeholder="300" required>
+            </div>
+            <div class="form-group">
+                <label>Thời gian di chuyển (giờ) <span style="color: red;">*</span></label>
+                <input type="number" step="0.5" placeholder="6" required>
+            </div>
+            <div class="form-group">
+                <label>Giá vé (VNĐ) <span style="color: red;">*</span></label>
+                <input type="number" placeholder="250000" required>
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea placeholder="Mô tả chi tiết về lộ trình..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select>
+                    <option value="active">Hoạt động</option>
+                    <option value="inactive">Tạm dừng</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('routeModal')">Hủy</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu lộ trình
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    // Modal functions
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Route actions
+    function editRoute() {
+        openModal('routeModal');
+    }
+
+    function deleteRoute() {
+        if (confirm('Bạn có chắc muốn xóa lộ trình này?')) {
+            alert('Đã xóa lộ trình!');
+        }
+    }
+
+    // Navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+
+            const section = this.getAttribute('href').substring(1);
+            document.querySelector('.header-left h1').textContent =
+                this.querySelector('span').textContent;
+        });
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('active');
+        }
+    }
+</script>

@@ -17,47 +17,65 @@ namespace Ticket_Booking_System.Controllers
         private readonly MongoDbContext _dbContext;
         public BillController()
         {
-             _dbContext = new MongoDbContext();
+            _dbContext = new MongoDbContext();
         }
         public ActionResult Index()
         {
             return View();
         }
-        public async Task<ActionResult> TraCuuHoaDon() {
+        public async Task<ActionResult> TraCuuHoaDon()
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
+            var userId = Session["UserID"].ToString();
+            // Lọc các hóa đơn của user này
+            var filter = Builders<Bill>.Filter.Eq(b => b.Customer.CustomerID, userId);
+            var bills = await _dbContext.Bill
+         .Find(b => b.Customer.CustomerID == userId)
+         .ToListAsync();
+
+            return View(bills);
+        }
+        [HttpPost]
+        public async Task<ActionResult> TraCuuHoaDon(FormCollection a)
+        {
             if (Session["UserID"] == null)
             {
                 TempData["ShowLogin"] = true;
                 return RedirectToAction("Index", "Home");
             }
 
-            var userId = Session["UserID"].ToString();
-            // Lọc các hóa đơn của user này
-            var filter = Builders<Bill>.Filter.Eq(b => b.Customer.CustomerID, userId);
-            var bills = await _dbContext.Bill.Find(filter).ToListAsync();
-            return View(bills);
-        }
-        [HttpPost]
-        public async Task<ActionResult> TraCuuHoaDon(FormCollection a)
-        {
             string Mahd = a["MaHD"];
+            var userId = Session["UserID"].ToString();
+
             if (string.IsNullOrEmpty(Mahd))
             {
                 ViewBag.Error = "Vui lòng nhập mã hóa đơn cần tra cứu.";
-                var allBills = await _dbContext.Bill.Find(FilterDefinition<Bill>.Empty).ToListAsync();
+                var allBills = await _dbContext.Bill
+                    .Find(b => b.Customer.CustomerID == userId)
+                    .ToListAsync();
                 return View(allBills);
             }
 
-            var bill = await _dbContext.Bill.Find(b => b.BillID == Mahd).FirstOrDefaultAsync();
+            var bill = await _dbContext.Bill
+                .Find(b => b.BillID == Mahd && b.Customer.CustomerID == userId)
+                .FirstOrDefaultAsync();
+
             if (bill == null)
             {
                 ViewBag.Error = "Không tìm thấy hóa đơn này.";
-                var allBills = await _dbContext.Bill.Find(FilterDefinition<Bill>.Empty).ToListAsync();
+                var allBills = await _dbContext.Bill
+                    .Find(b => b.Customer.CustomerID == userId)
+                    .ToListAsync();
                 return View(allBills);
             }
 
-            var listBill = new List<Bill> { bill };
-            return View(listBill);
+            return View(new List<Bill> { bill });
         }
+
         public class BillDetailViewModel
         {
             public Bill Bill { get; set; }
@@ -82,5 +100,7 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.Customer = customer;
             return View();
         }
+
+
     }
 }
