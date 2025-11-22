@@ -21,6 +21,7 @@ namespace Ticket_Booking_System.Controllers
             var cities = _context.Station.AsQueryable()
                            .Select(s => s.City)
                            .Distinct()
+                           .OrderBy(c => c)
                            .ToList();
             ViewBag.Cities = cities;
 

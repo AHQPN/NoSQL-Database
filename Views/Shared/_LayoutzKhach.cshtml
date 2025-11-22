@@ -362,7 +362,7 @@
          document.addEventListener("DOMContentLoaded", function() {
             var showLogin = '@TempData["ShowLogin"]';
             if (showLogin === 'True') {
-                showLoginForm(); // gọi hàm JS mở popup login
+                showLoginForm(); 
             }
         });
     </script>
@@ -370,7 +370,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var showRegister = '@TempData["ShowRegister"]';
             if (showRegister === 'True') {
-                showRegisterForm(); // gọi hàm JS mở popup login
+                showRegisterForm(); 
           }
         });
     </script>
@@ -378,7 +378,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     var showRegister = '@ViewBag.ShowRegister';
     if (showRegister === 'True') {
-        showRegisterForm(); // ✅ mở form đăng ký
+        showRegisterForm(); 
     }
 });
 
@@ -417,6 +417,8 @@ document.addEventListener("DOMContentLoaded", function() {
             syncSelects(fromCity, toCity);
             syncSelects(toCity, fromCity);
         });
+
+
 
     </script>
 </body>
