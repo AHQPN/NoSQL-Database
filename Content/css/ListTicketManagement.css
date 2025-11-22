@@ -1,0 +1,200 @@
+﻿.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-available {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-full {
+    background-color: #dc3545;
+    color: white;
+}
+
+.ticket-available {
+    background-color: #d4edda;
+}
+
+.ticket-booked {
+    background-color: #f8d7da;
+}
+
+.search-box {
+    max-width: 400px;
+}
+
+.action-btn {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+#ticketDetailModal .modal-dialog {
+    max-width: 900px;
+}
+
+.customer-info-card {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 20px;
+}
+
+#ticketDetailModal.modal.show {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+#ticketDetailModal .modal-dialog {
+    max-width: 900px;
+    margin: 1.75rem auto;
+    transform: none !important;
+}
+
+#ticketDetailModal .modal-content {
+    background-color: white !important;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 0.3rem;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+    z-index: 1040 !important;
+}
+
+#ticketDetailModal {
+    z-index: 1050 !important;
+}
+
+    #ticketDetailModal .modal-header,
+    #ticketDetailModal .modal-body,
+    #ticketDetailModal .modal-footer {
+        background-color: white !important;
+        color: #212529 !important;
+    }
+
+.ticket-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+    .ticket-table-container table {
+        margin-bottom: 0;
+    }
+
+    .ticket-table-container thead th {
+        position: sticky;
+        top: 0;
+        background-color: #e9ecef;
+        z-index: 10;
+    }
+
+.customer-info-row {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+}
+
+    .customer-info-row td {
+        padding: 15px !important;
+    }
+
+.customer-info-content {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-buttons {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: 2px solid #dee2e6;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .filter-btn:hover {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+
+    .filter-btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .filter-btn i {
+        margin-right: 5px;
+    }
+
+.expandable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .expandable-row:hover {
+        background-color: #f1f3f5 !important;
+    }
+
+.expand-icon {
+    transition: transform 0.3s;
+    display: inline-block;
+}
+
+    .expand-icon.expanded {
+        transform: rotate(90deg);
+    }
+
+.ticket-count-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.count-available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.count-booked {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+

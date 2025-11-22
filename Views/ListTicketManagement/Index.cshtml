@@ -1,0 +1,547 @@
+﻿@{
+    ViewBag.Title = "Quản lý Danh sách Vé";
+    Layout = "~/Views/Shared/_Layout_NhanVien.cshtml";
+}
+
+<link href="~/Content/css/ListTicketManagement.css" rel="stylesheet" />
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h3><i class="fas fa-bus me-2"></i>Quản lý chuyến xe</h3>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group search-box float-end">
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm chuyến xe...">
+                <button class="btn btn-primary" id="btnSearch">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>
+                                <a href="#" class="text-white text-decoration-none sort-link" data-sort="TripID">
+                                    Mã chuyến <i class="fas fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="text-white text-decoration-none sort-link" data-sort="TripName">
+                                    Tên tuyến <i class="fas fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="text-white text-decoration-none sort-link" data-sort="DepartureTime">
+                                    Giờ đi <i class="fas fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>Giờ đến</th>
+                            <th>Chỗ trống còn lại</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tripTableBody">
+                        <tr>
+                            <td colspan="7" class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                <p class="mt-2">Đang tải dữ liệu...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <label class="me-2">Hiển thị:</label>
+                        <select id="pageSizeSelect" class="form-select w-auto">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                        </select>
+                        <span class="ms-2" id="recordInfo"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <nav>
+                        <ul class="pagination justify-content-end mb-0" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ticketDetailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-ticket-alt me-2"></i>
+                    Chi tiết vé - <span id="modalTripName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-calendar-alt me-2"></i>Giờ đi:</strong> <span id="modalDepartureTime"></span></p>
+                        <p><strong><i class="fas fa-money-bill-wave me-2"></i>Giá vé:</strong> <span id="modalPrice"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-clock me-2"></i>Giờ đến:</strong> <span id="modalArrivalTime"></span></p>
+                        <p><strong><i class="fas fa-bus me-2"></i>Loại xe:</strong> <span id="modalVehicleType"></span></p>
+                    </div>
+                </div>
+
+                <div id="customerInfoCard" class="customer-info-card" style="display: none;">
+                    <h6><i class="fas fa-user me-2"></i>Thông tin khách hàng đã chọn:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Họ tên:</strong> <span id="customerName"></span></p>
+                            <p class="mb-1"><strong>Số điện thoại:</strong> <span id="customerPhone"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Mã hóa đơn:</strong> <span id="billID"></span></p>
+                            <p class="mb-1"><strong>Ngày đặt:</strong> <span id="createAt"></span></p>
+                        </div>
+                    </div>
+                    <div class="text-end mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="clearCustomerInfo">
+                            <i class="fas fa-times me-1"></i>Đóng
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                    <h6><i class="fas fa-list me-2"></i>Danh sách vé:</h6>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-th"></i>Tất cả <span class="ticket-count-badge" id="countAll">0</span>
+                        </button>
+                        <button class="filter-btn" data-filter="available">
+                            <i class="fas fa-check-circle"></i>Còn trống <span class="ticket-count-badge count-available" id="countAvailable">0</span>
+                        </button>
+                        <button class="filter-btn" data-filter="booked">
+                            <i class="fas fa-user"></i>Đã đặt <span class="ticket-count-badge count-booked" id="countBooked">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ticket-table-container">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th width="25%">Mã vé</th>
+                                <th width="20%">Số ghế</th>
+                                <th width="25%">Trạng thái</th>
+                                <th width="30%">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let currentPage = 1;
+        let pageSize = 10;
+        let searchTerm = '';
+        let sortBy = 'DepartureTime';
+        let sortOrder = 'asc';
+        let currentTickets = [];
+        let currentFilter = 'all';
+        let expandedTicketId = null;
+
+        function parseJsonDate(dateString) {
+            if (!dateString) return 'N/A';
+
+            try {
+                if (typeof dateString === 'string' && dateString.startsWith('/Date(')) {
+                    const timestamp = parseInt(dateString.match(/\d+/)[0]);
+                    const date = new Date(timestamp);
+                    return formatDate(date);
+                }
+
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return formatDate(date);
+                }
+
+                return 'N/A';
+            } catch (e) {
+                console.error('Date parsing error:', e, dateString);
+                return 'N/A';
+            }
+        }
+
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        function loadTrips() {
+            console.log('Loading trips...');
+            $.ajax({
+                url: '@Url.Action("GetTrips", "ListTicketManagement")',
+                type: 'GET',
+                data: {
+                    page: currentPage,
+                    pageSize: pageSize,
+                    search: searchTerm,
+                    sortBy: sortBy,
+                    sortOrder: sortOrder
+                },
+                success: function (response) {
+                    console.log('Response:', response);
+                    if (response.Success || response.success) {
+                        renderTrips(response.Data || response.data);
+                        renderPagination(
+                            response.TotalPages || response.totalPages,
+                            response.CurrentPage || response.currentPage,
+                            response.TotalRecords || response.totalRecords
+                        );
+                    } else {
+                        alert('Lỗi: ' + (response.Message || response.message || 'Không thể tải dữ liệu'));
+                    }
+                },
+                error: function (xhr, status, errorThrown) {
+                    console.error('Error:', errorThrown);
+                    alert('Không thể tải dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        }
+
+        function renderTrips(trips) {
+            let html = '';
+            if (!trips || trips.length === 0) {
+                html = '<tr><td colspan="7" class="text-center">Không có dữ liệu</td></tr>';
+            } else {
+                trips.forEach(function (trip) {
+                    let departureTime = 'N/A';
+                    let arrivalTime = 'N/A';
+
+                    try {
+                        if (trip.DepartureTime) {
+                            departureTime = parseJsonDate(trip.DepartureTime);
+                        }
+                        if (trip.ArrivalTime) {
+                            arrivalTime = parseJsonDate(trip.ArrivalTime);
+                        }
+                    } catch (e) {
+                        console.error('Date parsing error:', e);
+                    }
+
+                    let statusClass = trip.Status === 'available' ? 'status-available' : 'status-full';
+                    let statusText = trip.Status === 'available' ? 'Còn chỗ' : 'Hết chỗ';
+
+                    html += `
+                        <tr>
+                            <td>${trip.TripID || 'N/A'}</td>
+                            <td>${trip.TripName || 'N/A'}</td>
+                            <td>${departureTime}</td>
+                            <td>${arrivalTime}</td>
+                            <td>${trip.RemainingSeats || 0}/${trip.TotalSeats || 0}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-info action-btn view-detail" data-tripid="${trip.TripID}">
+                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            $('#tripTableBody').html(html);
+        }
+
+        function renderPagination(totalPages, currentPageNum, totalRecords) {
+            let html = '';
+            let startRecord = (currentPageNum - 1) * pageSize + 1;
+            let endRecord = Math.min(currentPageNum * pageSize, totalRecords);
+
+            $('#recordInfo').text(`Hiển thị ${startRecord}-${endRecord} / ${totalRecords} bản ghi`);
+
+            html += `<li class="page-item ${currentPageNum === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${currentPageNum - 1}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPageNum - 2 && i <= currentPageNum + 2)) {
+                    html += `<li class="page-item ${i === currentPageNum ? 'active' : ''}">
+                                <a class="page-link" href="#" data-page="${i}">${i}</a>
+                            </li>`;
+                } else if (i === currentPageNum - 3 || i === currentPageNum + 3) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            html += `<li class="page-item ${currentPageNum === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${currentPageNum + 1}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>`;
+
+            $('#pagination').html(html);
+        }
+
+        function updateTicketCounts() {
+            let availableCount = currentTickets.filter(t => t.Status === 'Available').length;
+            let bookedCount = currentTickets.filter(t => t.Status === 'Booked').length;
+
+            $('#countAll').text(currentTickets.length);
+            $('#countAvailable').text(availableCount);
+            $('#countBooked').text(bookedCount);
+        }
+
+        function filterAndRenderTickets() {
+            let filteredTickets = currentTickets;
+
+            if (currentFilter === 'available') {
+                filteredTickets = currentTickets.filter(t => t.Status === 'Available');
+            } else if (currentFilter === 'booked') {
+                filteredTickets = currentTickets.filter(t => t.Status === 'Booked');
+            }
+
+            renderTickets(filteredTickets);
+        }
+
+        function renderTickets(tickets) {
+            let ticketHtml = '';
+
+            if (tickets.length === 0) {
+                ticketHtml = '<tr><td colspan="4" class="text-center">Không có vé phù hợp</td></tr>';
+            } else {
+                tickets.forEach(function (ticket) {
+                    let rowClass = ticket.Status === 'Available' ? 'ticket-available' : 'ticket-booked';
+                    let statusText = ticket.Status === 'Available' ? 'Còn trống' : 'Đã đặt';
+                    let actionBtn = ticket.Status === 'Booked'
+                        ? `<button class="btn btn-sm btn-primary view-customer-inline" data-ticketid="${ticket.TicketID}">
+                                <i class="fas fa-chevron-right expand-icon me-1"></i>Xem thông tin Khách đặt 
+                           </button>`
+                        : `<span style="color: #28a745;"><i class="fas fa-check-circle me-1"></i>Còn trống</span>`;
+
+                    ticketHtml += `
+                        <tr class="expandable-row ${rowClass}" data-ticketid="${ticket.TicketID}">
+                            <td>${ticket.TicketID}</td>
+                            <td>${ticket.SeatNum}</td>
+                            <td>${statusText}</td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            $('#ticketTableBody').html(ticketHtml);
+        }
+
+        $(document).on('click', '.view-detail', function (e) {
+            e.preventDefault();
+            let tripId = $(this).data('tripid');
+
+            expandedTicketId = null;
+            currentFilter = 'all';
+            $('.filter-btn').removeClass('active');
+            $('.filter-btn[data-filter="all"]').addClass('active');
+
+            $('#modalTripName').text('Đang tải...');
+            $('#ticketTableBody').html('<tr><td colspan="4" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>');
+            $('#customerInfoCard').hide();
+
+            $.ajax({
+                url: '@Url.Action("GetTripDetails", "ListTicketManagement")',
+                type: 'GET',
+                data: { tripId: tripId },
+                success: function (response) {
+                    if (response.Success === true) {
+                        let trip = response.Data;
+
+                        if (!trip) {
+                            alert('Không tìm thấy thông tin chuyến xe');
+                            return;
+                        }
+
+                        $('#modalTripName').text(trip.TripName || 'N/A');
+
+                        try {
+                            if (trip.DepartureTime) {
+                                $('#modalDepartureTime').text(parseJsonDate(trip.DepartureTime));
+                            } else {
+                                $('#modalDepartureTime').text('N/A');
+                            }
+
+                            if (trip.ArrivalTime) {
+                                $('#modalArrivalTime').text(parseJsonDate(trip.ArrivalTime));
+                            } else {
+                                $('#modalArrivalTime').text('N/A');
+                            }
+                        } catch (e) {
+                            console.error('Date formatting error:', e);
+                            $('#modalDepartureTime').text('N/A');
+                            $('#modalArrivalTime').text('N/A');
+                        }
+
+                        let priceFormatted = (trip.Price || 0).toLocaleString('vi-VN');
+                        $('#modalPrice').text(priceFormatted + ' VNĐ');
+                        $('#modalVehicleType').text(trip.VehicleType || 'N/A');
+
+                        currentTickets = trip.Tickets || [];
+                        updateTicketCounts();
+                        filterAndRenderTickets();
+
+                        var modal = new bootstrap.Modal(document.getElementById('ticketDetailModal'));
+                        modal.show();
+                    } else {
+                        alert('Không thể tải thông tin chuyến xe: ' + (response.Message || 'Lỗi không xác định'));
+                    }
+                },
+                error: function (xhr, status, errorThrown) {
+                    console.error('AJAX Error:', status, errorThrown);
+                    alert('Không thể tải chi tiết chuyến xe. Vui lòng thử lại.');
+                }
+            });
+        });
+
+        $(document).on('click', '.filter-btn', function () {
+            $('.filter-btn').removeClass('active');
+            $(this).addClass('active');
+            currentFilter = $(this).data('filter');
+            expandedTicketId = null;
+            $('#customerInfoCard').slideUp();
+            filterAndRenderTickets();
+        });
+
+        $(document).on('click', '.view-customer-inline', function (e) {
+            e.stopPropagation();
+            let ticketId = $(this).data('ticketid');
+            let icon = $(this).find('.expand-icon');
+
+            if (expandedTicketId === ticketId) {
+                expandedTicketId = null;
+                $('#customerInfoCard').slideUp();
+                icon.removeClass('expanded');
+                return;
+            }
+
+            $('.expand-icon').removeClass('expanded');
+            icon.addClass('expanded');
+            expandedTicketId = ticketId;
+
+            $('#customerName').text('Đang tải...');
+            $('#customerPhone').text('Đang tải...');
+            $('#billID').text('Đang tải...');
+            $('#createAt').text('Đang tải...');
+
+            if ($('#customerInfoCard').is(':hidden')) {
+                $('#customerInfoCard').slideDown();
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetCustomerInfo", "ListTicketManagement")',
+                type: 'GET',
+                data: { ticketId: ticketId },
+                success: function (response) {
+                    if (response.success || response.Success) {
+                        let data = response.data || response.Data;
+                        $('#customerName').text(data.Name || 'N/A');
+                        $('#customerPhone').text(data.PhoneNum || 'N/A');
+                        $('#billID').text(data.BillID || 'N/A');
+                        $('#createAt').text(data.CreateAt || 'N/A');
+                    } else {
+                        alert('Không tìm thấy thông tin khách hàng');
+                        $('#customerInfoCard').slideUp();
+                        expandedTicketId = null;
+                        $('.expand-icon').removeClass('expanded');
+                    }
+                },
+                error: function (xhr, status, errorThrown) {
+                    console.error('Error loading customer info:', errorThrown);
+                    alert('Không thể tải thông tin khách hàng');
+                    $('#customerInfoCard').slideUp();
+                    expandedTicketId = null;
+                    $('.expand-icon').removeClass('expanded');
+                }
+            });
+        });
+
+        $(document).on('click', '#clearCustomerInfo', function () {
+            $('#customerInfoCard').slideUp();
+            $('.expand-icon').removeClass('expanded');
+            expandedTicketId = null;
+        });
+
+        $('#btnSearch').click(function () {
+            searchTerm = $('#searchInput').val();
+            currentPage = 1;
+            loadTrips();
+        });
+
+        $('#searchInput').keypress(function (e) {
+            if (e.which === 13) {
+                $('#btnSearch').click();
+            }
+        });
+
+        $('#pageSizeSelect').change(function () {
+            pageSize = parseInt($(this).val());
+            currentPage = 1;
+            loadTrips();
+        });
+
+        $(document).on('click', '#pagination .page-link', function (e) {
+            e.preventDefault();
+            if (!$(this).parent().hasClass('disabled') && !$(this).parent().hasClass('active')) {
+                currentPage = parseInt($(this).data('page'));
+                loadTrips();
+            }
+        });
+
+        $('.sort-link').click(function (e) {
+            e.preventDefault();
+            let newSortBy = $(this).data('sort');
+            if (sortBy === newSortBy) {
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortBy = newSortBy;
+                sortOrder = 'asc';
+            }
+
+            $('.sort-link i').removeClass('fa-sort-up fa-sort-down').addClass('fa-sort');
+            if (sortOrder === 'asc') {
+                $(this).find('i').removeClass('fa-sort').addClass('fa-sort-up');
+            } else {
+                $(this).find('i').removeClass('fa-sort').addClass('fa-sort-down');
+            }
+
+            currentPage = 1;
+            loadTrips();
+        });
+
+        loadTrips();
+    });
+</script>
