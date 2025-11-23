@@ -71,6 +71,9 @@
                                             <a class="nav-link text-white" href="/Bill/TraCuuHoaDon">Hóa đơn</a>
                                         </li>
                                         <li class="nav-item mx-lg-3">
+                                            <a class="nav-link text-white" href="/Bill/LichSuVe">Lịch sử vé</a>
+                                        </li>
+                                        <li class="nav-item mx-lg-3">
                                             <a class="nav-link text-white" href="/Customer/AboutUs">Về chúng tôi</a>
                                         </li>
 
@@ -370,6 +373,8 @@
         });
     </script>
     <script>
+
+
 document.addEventListener("DOMContentLoaded", function() {
     var showRegister = '@ViewBag.ShowRegister';
     if (showRegister === 'True') {
@@ -416,6 +421,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     </script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 
 </html>

@@ -101,6 +101,74 @@ namespace Ticket_Booking_System.Controllers
             return View();
         }
 
+        public async Task<ActionResult> LichSuVe()
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
+
+            string userId = Session["UserID"].ToString();
+
+            var bills = await _dbContext.Bill
+                .Find(b => b.Customer.CustomerID == userId)
+                .ToListAsync();
+
+            // Map sang TicketHistoryViewModel
+            var history = bills.Select(b => new TicketHistoryViewModel
+            {
+                BillID = b.BillID,
+                CreateAt = b.CreateAt,
+                Quantity = b.Quantity,
+                Total = b.Total,
+                Tickets = b.ListItem,
+                TripInfo = b.TripInfo,
+                TripID = b.TripInfo?.TripID,
+                Status = b.Status,
+                PaymentStatus = b.PaymentStatus
+
+            }).ToList();
+
+            return View(history);
+        }
+
+        public async Task<ActionResult> MuaLai(string billID)
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
+
+            var db = new MongoDbContext();
+
+            var bill = await db.Bill.Find(b => b.BillID == billID).FirstOrDefaultAsync();
+            if (bill == null)
+            {
+                TempData["Error"] = "Không tìm thấy hóa đơn.";
+                return RedirectToAction("LichSuVe");
+            }
+
+            string tripID = bill.TripInfo.TripID;
+
+            // Lấy chuyến hiện tại
+            var trip = await db.Trip.Find(t => t.TripID == tripID).FirstOrDefaultAsync();
+            if (trip == null || trip.DepartureTime < DateTime.Now)
+            {
+                TempData["Error"] = "Chuyến này không còn hoạt động.";
+                return RedirectToAction("LichSuVe");
+            }
+
+            // Lấy danh sách ghế cũ từ Bill
+            string oldSeats = string.Join(",", bill.ListItem.Select(i => i.SeatNum));
+
+            return RedirectToAction("Book_Ticket", "Ticket", new { tripID = tripID, oldSeats = oldSeats });
+        }
+       
+
+
+
 
     }
 }

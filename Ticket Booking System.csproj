@@ -243,6 +243,7 @@
     <Compile Include="Models\News.cs" />
     <Compile Include="Models\Station.cs" />
     <Compile Include="Models\Ticket.cs" />
+    <Compile Include="Models\TicketHistoryViewModel.cs" />
     <Compile Include="Models\Trip.cs" />
     <Compile Include="Models\TripStatsViewModel.cs" />
     <Compile Include="Models\User.cs" />
@@ -410,6 +411,7 @@
     <Content Include="Views\ListTicketManagement\Index.cshtml" />
     <Content Include="Views\Shared\_Admin.cshtml" />
     <Content Include="Views\Admin\ThongKe.cshtml" />
+    <Content Include="Views\Bill\LichSuVe.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

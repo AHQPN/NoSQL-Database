@@ -39,6 +39,7 @@ namespace Ticket_Booking_System.Models
         public Vehicle Vehicle { get; set; } 
         [BsonElement("State")]
         public string State { get; set; }
+        
 
         [BsonIgnore]
         public string Duration

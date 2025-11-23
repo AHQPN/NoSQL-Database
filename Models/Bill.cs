@@ -35,6 +35,11 @@ namespace Ticket_Booking_System.Models
 
         [BsonElement("TripInfo")]
         public TripInfo TripInfo { get; set; }
+
+        public string Status { get; set; }
+        public string BookingID { get; set; }
+
+
     }
 
     public class CustomerInfo

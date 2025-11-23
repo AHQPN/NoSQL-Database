@@ -1,0 +1,126 @@
+﻿@model List<Ticket_Booking_System.Models.TicketHistoryViewModel>
+
+@{
+    ViewBag.Title = "Lịch sử vé";
+    Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4" style="color:#f97019;">LỊCH SỬ VÉ CỦA BẠN</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center" id="historyTable">
+            <thead style="background-color:#f97019; color:white;">
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Ngày đặt</th>
+                    <th>Số vé</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    bool isCanceled = item.PaymentStatus == "Canceled";
+
+                    <tr data-billid="@item.BillID" class="@(isCanceled)">
+                        <td>@item.BillID</td>
+                        <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Total.ToString("N0") VNĐ</td>
+                        <td class="status-cell">
+                            @if (isCanceled)
+                            {
+                                <span class="badge bg-secondary p-2">ĐÃ HỦY</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success p-2">ĐÃ ĐẶT</span>
+                            }
+                        </td>
+                        <td class="action-cell">
+                            <a href="@Url.Action("ChiTietHoaDon", "Bill", new { id = item.BillID })" class="btn btn-sm btn-primary">XEM</a>
+
+                            <a href="@Url.Action("MuaLai", "Bill", new { billID = item.BillID })"
+                               class="btn btn-sm btn-success @(isCanceled ? "" : "disabled")">MUA LẠI</a>
+
+                            @if (!isCanceled)
+                            {
+                                <button class="btn btn-sm btn-danger btn-huyve">HỦY VÉ</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-secondary" disabled>HỦY VÉ</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Popup xác nhận hủy vé -->
+<div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmCancelLabel">Xác nhận hủy vé</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn hủy vé này?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var billToCancel = null;
+
+        $(document).ready(function () {
+            // Click nút HỦY VÉ
+            $('.btn-huyve').click(function () {
+                billToCancel = $(this).closest('tr').data('billid');
+                $('#confirmCancelModal').modal('show');
+            });
+
+            // Xác nhận hủy vé
+            $('#confirmCancelBtn').click(function () {
+                if (!billToCancel) return;
+
+                $.ajax({
+                    url: '@Url.Action("HuyVe", "Ticket")',
+                    type: 'POST',
+                    data: { billID: billToCancel },
+                    success: function () {
+                        var row = $('tr[data-billid="' + billToCancel + '"]');
+
+                        // Cập nhật UI trạng thái
+                        row.find('.status-cell').html('<span class="badge bg-secondary p-2">ĐÃ HỦY</span>');
+
+                        // Disable nút HỦY VÉ
+                        row.find('.action-cell .btn-huyve').replaceWith('<button class="btn btn-sm btn-secondary" disabled>HỦY VÉ</button>');
+
+                        // Enable nút MUA LẠI
+                        row.find('.action-cell .btn-success').removeClass('disabled');
+
+                        $('#confirmCancelModal').modal('hide');
+                        billToCancel = null;
+                    },
+                    error: function () {
+                        alert('Hủy vé thất bại. Vui lòng thử lại.');
+                    }
+                });
+            });
+        });
+    </script>
+}

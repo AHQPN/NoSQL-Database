@@ -6,10 +6,11 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
+using Ticket_Booking_System.Infrastructure;
 using Ticket_Booking_System.Models;
 using Ticket_Booking_System.Repositories;
-using Ticket_Booking_System.Infrastructure;
 
 namespace Ticket_Booking_System.Controllers
 {
@@ -55,22 +56,70 @@ namespace Ticket_Booking_System.Controllers
         }
 
         // Trang đặt vé
-        public async Task<ActionResult> Book_Ticket(string tripID)
+        //public async Task<ActionResult> Book_Ticket(string tripID)
+        //{
+        //    TempData.Clear();
+
+        //    await _tripRepository.ReleaseExpiredPendingSeatsAsync(tripID);
+
+        //    Trip trip = await _tripRepository.GetByIdAsync(tripID);
+        //    string customerID = Session["UserID"] as string;
+        //    User usr = await _userRepository.GetByIdAsync(customerID);
+        //    ViewBag.userInfo = usr;
+
+        //    var reserved = await RedisManager.GetReservedSeatsAsync(tripID);
+        //    ViewBag.RedisReservedSeats = reserved;
+
+        //    return View(trip);
+        //}
+        public async Task<ActionResult> Book_Ticket(string tripID, string oldSeats = "")
         {
             TempData.Clear();
 
+            // Giải phóng ghế Pending hết hạn
             await _tripRepository.ReleaseExpiredPendingSeatsAsync(tripID);
 
-            Trip trip = await _tripRepository.GetByIdAsync(tripID);
+            // Lấy thông tin chuyến đi và user
+            var trip = await _tripRepository.GetByIdAsync(tripID);
             string customerID = Session["UserID"] as string;
-            User usr = await _userRepository.GetByIdAsync(customerID);
-            ViewBag.userInfo = usr;
+            var user = await _userRepository.GetByIdAsync(customerID);
+            ViewBag.userInfo = user;
 
+            // Lấy danh sách ghế đang được giữ trong Redis
             var reserved = await RedisManager.GetReservedSeatsAsync(tripID);
             ViewBag.RedisReservedSeats = reserved;
 
+            // --- Xử lý ghế cũ ---
+            List<string> availableOldSeats = new List<string>();
+            List<string> failedOldSeats = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(oldSeats))
+            {
+                var oldSeatList = oldSeats.Split(',').Select(s => s.Trim()).ToList();
+
+                foreach (var seat in oldSeatList)
+                {
+                    var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
+
+                    // Ghế còn trống → thêm vào available
+                    if (ticket != null && ticket.Status == "Available")
+                        availableOldSeats.Add(seat);
+                    else
+                        failedOldSeats.Add(seat);
+                }
+            }
+
+            // Gửi lên view
+            ViewBag.AvailableOldSeats = availableOldSeats;
+            ViewBag.FailedOldSeats = failedOldSeats;
+
+            // Quan trọng: để JS tự chọn ghế cũ
+            ViewBag.OldSeats = string.Join(",", availableOldSeats);
+
             return View(trip);
         }
+
+
 
         // Xử lý đặt ghế
         [HttpGet]
@@ -154,7 +203,7 @@ namespace Ticket_Booking_System.Controllers
             {
                 await RedisManager.ReleaseSeatsAsync(tripID, seatList, bookingId);
                 await _tripRepository.UpdateSeatStatusAsync(tripID, seatList, "Pending", "Available");
-                
+
                 TempData["Message"] = "Đã hủy đặt vé.";
                 TempData["MessageType"] = "warning";
                 return RedirectToAction("Index", "Home");
@@ -206,6 +255,10 @@ namespace Ticket_Booking_System.Controllers
             return RedirectToAction("PaymentSuccess", new { billID = bill.BillID });
         }
 
+
+
+
+
         public async Task<ActionResult> PaymentSuccess(string billID)
         {
             var billRepo = new BillRepository(new MongoDbContext().Bill.Database);
@@ -237,5 +290,63 @@ namespace Ticket_Booking_System.Controllers
             TempData["MessageType"] = "danger";
             return RedirectToAction("Book_Ticket", new { tripID = tripId });
         }
+
+        [HttpPost]
+        public async Task<ActionResult> HuyVe(string billID)
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Lấy hóa đơn
+            var bill = await _billRepository.GetByIdAsync(billID);
+            if (bill == null)
+            {
+                TempData["error"] = "Không tìm thấy hóa đơn!";
+                return RedirectToAction("LichSuVe", "Bill");
+            }
+
+            // Kiểm tra trạng thái
+            if (bill.PaymentStatus == "Canceled")
+            {
+                TempData["message"] = "Vé này đã được hủy trước đó!";
+                return RedirectToAction("LichSuVe", "Bill");
+            }
+
+            bill.PaymentStatus = "Canceled";
+
+                // Cập nhật trong ListItem
+            if (bill.ListItem != null && bill.ListItem.Count > 0)
+            {
+                foreach (var item in bill.ListItem)
+                {
+                    item.Status = "Available"; 
+                }
+
+                // Cập nhật trạng thái ghế trong Trip
+                if (bill.TripInfo != null)
+                {
+                    var seatNums = bill.ListItem.Select(i => i.SeatNum).ToList();
+                    await _tripRepository.UpdateSeatStatusAsync(
+                        bill.TripInfo.TripID,
+                        seatNums,
+                        "Booked",       
+                        "Available");   
+                }
+            }
+
+            
+            await _billRepository.UpdateAsync(bill);
+
+            TempData["message"] = "Hủy vé thành công!";
+            TempData["MessageType"] = "success";
+            return RedirectToAction("LichSuVe", "Bill");
+        }
+
+
+
+
     }
 }
