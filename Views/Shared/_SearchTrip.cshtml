@@ -1,0 +1,75 @@
+﻿
+
+<!-- Tìm chuyến xe -->
+<div class=" row">
+    <div class="container p-4 my-4 border rounded-3 ticket-search-container">
+
+        <!--Layout chính-->
+        <form class="row g-3" action="/Trip/FindTrip" method="post" enctype="multipart/form-data">
+            @*@Html.Action("RoadMap","Trip")*@
+
+            <div class="col-md-3">
+                <label for="fromCity" class="form-label">Điểm đi</label>
+                <select id="fromCity" name="FromCity" class="form-select info-ticket">
+                    <option value="">-- Chọn bến xe --</option>
+                    @if (ViewBag.Cities != null && ViewBag.Cities.Count > 0)
+                    {
+                        foreach (var city in ViewBag.Cities as List<string>)
+                        {
+                            <option value="@city" @(ViewBag.FromCity != null && ViewBag.FromCity.ToString() == city ? "selected" : "")>@city</option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled selected>-- Không có dữ liệu --</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="toCity" class="form-label">Điểm đến</label>
+                <select id="toCity" name="ToCity" class="form-select info-ticket">
+                    <option value="">-- Chọn bến xe --</option>
+                    @if (ViewBag.Cities != null && ViewBag.Cities.Count > 0)
+                    {
+                        foreach (var city in ViewBag.Cities as List<string>)
+                        {
+                            <option value="@city" @(ViewBag.ToCity != null && ViewBag.ToCity.ToString() == city ? "selected" : "")>@city</option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled selected>-- Không có dữ liệu --</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3 ">
+                <label for="date" class="form-label">Ngày đi</label>
+                @*<input type="date" id="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" name="txtDate" class="form-control info-ticket">*@
+                <input type="date" id="date" value="@(ViewBag.Date != null ? Convert.ToDateTime(ViewBag.Date).ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" name="txtDate" class="form-control info-ticket">
+            </div>
+
+            <div class="col-md-2">
+                <label for="tickets" class="form-label">Số vé</label>
+                @*<select name="SoVe" id="tickets" class="form-select info-ticket">
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>*@
+                <select name="SoVe" id="tickets" class="form-select info-ticket">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <option value="@i" @(ViewBag.SoVe != null && Convert.ToInt32(ViewBag.SoVe) == i ? "selected" : "")>@i</option>
+                    }
+                </select>
+
+            </div>
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-danger w-100 w-md-50 mt-4 search-btn" type="submit">Tìm chuyến xe</button>
+            </div>
+        </form>
+    </div>
+</div>

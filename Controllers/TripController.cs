@@ -33,7 +33,18 @@ namespace Ticket_Booking_System.Controllers
             //return View(groups);
             return PartialView("~/Views/Shared/_PopularTrips.cshtml", groups);
         }
-
+        [ChildActionOnly]
+        public ActionResult SearchTrip()
+        {
+            var cities = _context.Station.AsQueryable()
+                           .Select(s => s.City)
+                           .Distinct()
+                           .OrderBy(c => c)
+                           .ToList();
+            ViewBag.Cities = cities;
+            //return View(groups);
+            return PartialView("~/Views/Shared/_SearchTrip.cshtml");
+        }
         [HttpGet]
         public ActionResult GFindTrip(string FromCity, string ToCity, DateTime txtDate, int SoVe)
         {
@@ -62,7 +73,6 @@ namespace Ticket_Booking_System.Controllers
 
             var query = allTrips.Where(t =>
             {
-                // Kiểm tra RoadMap có chứa FromCity và ToCity theo đúng thứ tự
                 var roadMapCities = t.RoadMap?.Select(r => r.City).ToList();
                 if (roadMapCities == null || roadMapCities.Count < 2)
                     return false;
@@ -70,15 +80,12 @@ namespace Ticket_Booking_System.Controllers
                 int fromIndex = roadMapCities.IndexOf(FromCity);
                 int toIndex = roadMapCities.IndexOf(ToCity);
 
-                // FromCity phải ở vị trí đầu tiên và ToCity phải đến sau
                 if (fromIndex == -1 || toIndex == -1 || fromIndex >= toIndex)
                     return false;
 
-                // Kiểm tra thời gian
                 if (t.DepartureTime < startDate || t.DepartureTime >= endDate)
                     return false;
 
-                // Nếu là hôm nay, chỉ lấy những chuyến khởi hành sau thời điểm hiện tại
                 if (txtDate.Date == now.Date && t.DepartureTime < now)
                     return false;
 
@@ -299,7 +306,6 @@ namespace Ticket_Booking_System.Controllers
             }
         }
 
-        // Validation logic - SỬA LẠI
         private async Task<ValidationResult> ValidateTripData(dynamic model, string excludeTripId = null)
         {
             // Kiểm tra thời gian

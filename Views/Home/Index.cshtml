@@ -2,6 +2,7 @@
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_LayoutzKhach.cshtml";
 }
+@Html.Action("SearchTrip", "Trip")
 @Html.Action("PopularTrip", "Trip")
 
 @if (TempData["Message"] != null)

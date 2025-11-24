@@ -424,6 +424,8 @@
     <Content Include="Views\Trip\Create.cshtml" />
     <Content Include="Views\Trip\Edit.cshtml" />
     <Content Include="Views\Trip\Index.cshtml" />
+    <Content Include="Views\Shared\_SearchTrip.cshtml" />
+    <Content Include="Views\Trip\SearchTrip.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
