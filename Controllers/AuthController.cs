@@ -60,6 +60,13 @@ namespace Ticket_Booking_System.Controllers
                 return View("Login");
             }
 
+            if (usr.Status != "Active")
+            {
+                ViewBag.Error = "Tài khoản bạn đã bị đình chỉ";
+                TempData["ShowLogin"] = true;
+                return View("Login");
+            }
+
             Session["UserID"] = usr.UserID;
             Session["UserName"] = usr.Name;
             Session["Role"] = usr.Role;
