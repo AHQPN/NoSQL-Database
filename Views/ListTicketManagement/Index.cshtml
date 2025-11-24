@@ -143,6 +143,13 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <div class="roadmap-container mb-3">
+                    <h6><i class="fas fa-route me-2"></i>Lộ trình:</h6>
+                    <div class="roadmap-path" id="modalRoadMap">
+                        <span class="text-muted">Đang tải...</span>
+                    </div>
+                </div>
+                <hr>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <p><strong><i class="fas fa-calendar-alt me-2"></i>Giờ đi:</strong> <span id="modalDepartureTime"></span></p>
@@ -459,6 +466,7 @@
             $('.filter-btn[data-filter="all"]').addClass('active');
 
             $('#modalTripName').text('Đang tải...');
+            $('#modalRoadMap').html('<span class="text-muted">Đang tải...</span>');
             $('#ticketTableBody').html('<tr><td colspan="4" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>');
             $('#customerInfoCard').hide();
 
@@ -476,6 +484,20 @@
                         }
 
                         $('#modalTripName').text(trip.TripName || 'N/A');
+
+
+                        if (trip.RoadMap && trip.RoadMap.length > 0) {
+                            let roadmapHtml = '';
+                            trip.RoadMap.forEach(function (city, index) {
+                                roadmapHtml += `<span class="roadmap-city">${city}</span>`;
+                                if (index < trip.RoadMap.length - 1) {
+                                    roadmapHtml += '<span class="roadmap-arrow">→</span>';
+                                }
+                            });
+                            $('#modalRoadMap').html(roadmapHtml);
+                        } else {
+                            $('#modalRoadMap').html('<span class="text-muted">Không có thông tin lộ trình</span>');
+                        }
 
                         try {
                             if (trip.DepartureTime) {

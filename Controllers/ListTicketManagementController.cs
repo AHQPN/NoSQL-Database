@@ -292,6 +292,7 @@ namespace Ticket_Booking_System.Controllers
                     ArrivalTime = trip.ArrivalTime,
                     Price = trip.Price,
                     VehicleType = trip.Vehicle.VehicleType,
+                    RoadMap = trip.RoadMap?.Select(r => r.City).ToList() ?? new List<string>(),
                     Tickets = trip.ListTicket.Select(ticket => new TicketDetailViewModel
                     {
                         TicketID = ticket.TicketID,

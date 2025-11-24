@@ -26,6 +26,7 @@ namespace Ticket_Booking_System.Models
             public DateTime ArrivalTime { get; set; }
             public double Price { get; set; }
             public string VehicleType { get; set; }
+            public List<string> RoadMap { get; set; }
             public List<TicketDetailViewModel> Tickets { get; set; }
         }
 
