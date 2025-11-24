@@ -16,13 +16,20 @@ namespace Ticket_Booking_System.Controllers
     {
         private readonly IListTicketManagement.ITripRepository _tripRepository;
         private readonly IListTicketManagement.IBillRepository _billRepository;
+        private readonly IListTicketManagement.IStationRepository _stationRepository;
         public ListTicketManagementController()
         {
             try
             {
                 var dbContext = new MongoDbContext();
-                _tripRepository = new ListTicketMangement.TripRepository(dbContext.Trip.Database);
-                _billRepository = new ListTicketMangement.BillRepository(dbContext.Bill.Database);
+
+                var database = dbContext.GetDatabase();
+
+                _tripRepository = new ListTicketMangement.TripRepository(database);
+                _billRepository = new ListTicketMangement.BillRepository(database);
+                _stationRepository = new ListTicketMangement.StationRepository(database);
+                //_tripRepository = new ListTicketMangement.TripRepository(dbContext.Trip.Database);
+                //_billRepository = new ListTicketMangement.BillRepository(dbContext.Bill.Database);
             }
             catch (Exception ex)
             {
@@ -42,10 +49,14 @@ namespace Ticket_Booking_System.Controllers
         {
             try
             {
-                var now = DateTime.Now;
-
-                var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
-
+                //var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
+                var allTrips = await _tripRepository.GetAllAsync();
+                if (allTrips != null && allTrips.Any())
+                {
+                    var now = DateTime.Now.Date;
+                    allTrips = allTrips.Where(t => t.DepartureTime.Date >= now).ToList();
+                    System.Diagnostics.Debug.WriteLine($"After date filter: {allTrips.Count}");
+                }
                 // Filter by city (check if any station in RoadMap matches)
                 if (!string.IsNullOrEmpty(city))
                 {
@@ -137,25 +148,105 @@ namespace Ticket_Booking_System.Controllers
             }
         }
         [HttpGet]
+        //public async Task<JsonResult> GetStations()
+        //{
+        //    try
+        //    {
+        //        //var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
+        //        var allTrips = await _tripRepository.GetAllAsync();
+        //        if (allTrips != null && allTrips.Any())
+        //        {
+        //            var now = DateTime.Now.Date;
+        //            allTrips = allTrips.Where(t => t.DepartureTime.Date >= now).ToList();
+        //            System.Diagnostics.Debug.WriteLine($"After date filter: {allTrips.Count}");
+        //        }
+
+        //        var uniqueStations = allTrips
+        //            .Where(t => t.RoadMap != null && t.RoadMap.Any())
+        //            .SelectMany(t => t.RoadMap)
+        //            .GroupBy(s => new { s.StationID, s.City, s.StationName })
+        //            .Select(g => new
+        //            {
+        //                StationID = g.Key.StationID,
+        //                City = g.Key.City,
+        //                StationName = g.Key.StationName
+        //            })
+        //            .OrderBy(s => s.City)
+        //            .ThenBy(s => s.StationName)
+        //            .ToList();
+
+        //        return Json(new
+        //        {
+        //            Success = true,
+        //            Data = uniqueStations
+        //        }, JsonRequestBehavior.AllowGet);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new
+        //        {
+        //            Success = false,
+        //            Message = ex.Message
+        //        }, JsonRequestBehavior.AllowGet);
+        //    }
+        ////}
         public async Task<JsonResult> GetStations()
         {
             try
             {
-                var now = DateTime.Now;
+                var allTrips = await _tripRepository.GetAllAsync();
+                var allStations = await _stationRepository.GetAllAsync();
+                var stationDict = allStations.ToDictionary(s => s.StationID);
 
-                var allTrips = await _tripRepository.GetUpcomingTripsAsync(now);
-                //var allTrips = await _tripRepository.GetAllAsync();
+                System.Diagnostics.Debug.WriteLine($"Total trips loaded: {allTrips?.Count ?? 0}");
+
+                if (allTrips != null && allTrips.Any())
+                {
+                    var now = DateTime.Now.Date;
+                    allTrips = allTrips.Where(t => t.DepartureTime.Date >= now).ToList();
+                    System.Diagnostics.Debug.WriteLine($"After date filter: {allTrips.Count}");
+
+                    // Debug RoadMap data
+                    var firstTripWithRoadMap = allTrips.FirstOrDefault(t => t.RoadMap != null && t.RoadMap.Any());
+                    if (firstTripWithRoadMap != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Sample RoadMap data:");
+                        foreach (var station in firstTripWithRoadMap.RoadMap.Take(2))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"  StationID: {station.StationID}");
+                            System.Diagnostics.Debug.WriteLine($"  City: '{station.City}'");
+                            System.Diagnostics.Debug.WriteLine($"  StationName: '{station.StationName}'");
+                            System.Diagnostics.Debug.WriteLine($"  City is null or empty: {string.IsNullOrEmpty(station.City)}");
+                        }
+                    }
+                }
 
                 var uniqueStations = allTrips
                     .Where(t => t.RoadMap != null && t.RoadMap.Any())
                     .SelectMany(t => t.RoadMap)
-                    .GroupBy(s => new { s.StationID, s.City, s.StationName })
-                    .Select(g => new
+                    .Where(s => !string.IsNullOrEmpty(s.StationID))
+                    .Select(s =>
                     {
-                        StationID = g.Key.StationID,
-                        City = g.Key.City,
-                        StationName = g.Key.StationName
+                        // JOIN
+                        if (stationDict.TryGetValue(s.StationID, out var st))
+                        {
+                            return new
+                            {
+                                StationID = st.StationID,
+                                City = st.City,
+                                StationName = st.StationName
+                            };
+                        }
+
+                        // Trường hợp StationID không tồn tại trong DB
+                        return new
+                        {
+                            StationID = s.StationID,
+                            City = s.City,
+                            StationName = ""
+                        };
                     })
+                    .Distinct()
                     .OrderBy(s => s.City)
                     .ThenBy(s => s.StationName)
                     .ToList();
@@ -168,6 +259,7 @@ namespace Ticket_Booking_System.Controllers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"GetStations Error: {ex.Message}");
                 return Json(new
                 {
                     Success = false,

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using MongoDB.Driver;
 using Ticket_Booking_System.Models;
+using static Ticket_Booking_System.Repositories.IListTicketManagement;
 
 namespace Ticket_Booking_System.Repositories
 {
@@ -31,8 +32,36 @@ namespace Ticket_Booking_System.Repositories
 
             public async Task<List<Trip>> GetUpcomingTripsAsync(DateTime fromDate)
             {
-                var filter = Builders<Trip>.Filter.Gte(t => t.DepartureTime, fromDate);
-                return await _trips.Find(filter).ToListAsync();
+                //var filter = Builders<Trip>.Filter.Gte(t => t.DepartureTime, fromDate);
+
+                //var dateOnly = fromDate.Date;
+                //var filter = Builders<Trip>.Filter.Gte(t => t.DepartureTime, dateOnly);
+                //return await _trips.Find(filter).ToListAsync();
+
+                try
+                {
+                    var utcDate = fromDate.Kind == DateTimeKind.Local
+                        ? fromDate.ToUniversalTime()
+                        : fromDate;
+
+                    var dateOnly = utcDate.Date;
+
+                    System.Diagnostics.Debug.WriteLine($"Local date: {fromDate}");
+                    System.Diagnostics.Debug.WriteLine($"UTC date: {utcDate}");
+                    System.Diagnostics.Debug.WriteLine($"Filter with: {dateOnly}");
+
+                    var filter = Builders<Trip>.Filter.Gte(t => t.DepartureTime, dateOnly);
+                    var trips = await _trips.Find(filter).ToListAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"Found {trips.Count} trips");
+
+                    return trips ?? new List<Trip>();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"GetUpcomingTripsAsync Error: {ex.Message}");
+                    throw;
+                }
             }
 
             public async Task<bool> UpdateAsync(Trip trip)
@@ -82,6 +111,45 @@ namespace Ticket_Booking_System.Repositories
                 );
 
                 return await _bills.Find(filter).ToListAsync();
+            }
+        }
+        public class StationRepository : IListTicketManagement.IStationRepository
+        {
+            private readonly IMongoCollection<Station> _stationCollection;
+
+            public StationRepository(IMongoDatabase database)
+            {
+                _stationCollection = database.GetCollection<Station>("Station");
+            }
+
+            public async Task<List<Station>> GetAllAsync()
+            {
+                return await _stationCollection.Find(_ => true).ToListAsync();
+            }
+
+            public async Task<Station> GetByIdAsync(string stationId)
+            {
+                return await _stationCollection
+                    .Find(s => s.StationID == stationId)
+                    .FirstOrDefaultAsync();
+            }
+
+            public async Task AddAsync(Station station)
+            {
+                await _stationCollection.InsertOneAsync(station);
+            }
+
+            public async Task UpdateAsync(Station station)
+            {
+                await _stationCollection.ReplaceOneAsync(
+                    s => s.StationID == station.StationID,
+                    station
+                );
+            }
+
+            public async Task DeleteAsync(string stationId)
+            {
+                await _stationCollection.DeleteOneAsync(s => s.StationID == stationId);
             }
         }
     }

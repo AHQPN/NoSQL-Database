@@ -24,5 +24,13 @@ namespace Ticket_Booking_System.Repositories
             Task<Bill> GetByTicketIdAsync(string ticketId);
             Task<List<Bill>> GetBillsByDateAsync(DateTime date);
         }
+        public interface IStationRepository
+        {
+            Task<List<Station>> GetAllAsync();
+            Task<Station> GetByIdAsync(string stationId);
+            Task AddAsync(Station station);
+            Task UpdateAsync(Station station);
+            Task DeleteAsync(string stationId);
+        }
     }
 }
