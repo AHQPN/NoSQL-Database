@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Ticket_Booking_System.Models;
+using Ticket_Booking_System.Models.admin;
 using Ticket_Booking_System.Models.Admin;
 using Ticket_Booking_System.Repositories;
+
+
 
 namespace Ticket_Booking_System.Controllers
 {
@@ -111,5 +114,111 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.GetTopTrips = await GetTopTrips();
             return View();
         }
+        public async Task<List<KhachHangThanThiet>> GetThongKeKhachHang()
+        {
+            var now = DateTime.Now;
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+
+            var bills = await _dbContext.Bill.Find(b => true).ToListAsync();
+
+            var khachHang = bills
+                .GroupBy(b => b.Customer.CustomerID)
+                .Select(g =>
+                {
+                    var customerBills = g.ToList();
+
+
+                    var validBills = customerBills.Where(b => b.PaymentStatus == "Paid").ToList();
+
+                    var soLanMua = validBills.Count;
+
+
+                    var soVeDaDat = validBills.Sum(b => b.ListItem?.Count(t => t.Status == "Booked") ?? 0);
+ 
+                    var tongTien = validBills.Sum(b =>
+                        (b.ListItem?.Count(t => t.Status == "Booked") ?? 0) *
+                        ((decimal?)(b.TripInfo?.Price) ?? 0m)
+                    );
+         
+                    var diem = (int)(tongTien / 10000);
+
+                    string phanHang = diem >= 200 ? "Kim Cương" : (diem >= 100 ? "Vàng" : "Bạc");
+
+                    var billsInMonth = validBills.Where(b => b.CreateAt >= firstDayOfMonth).ToList();
+                    var chiTietChuyen = billsInMonth
+                        .SelectMany(b => b.ListItem
+                                          .Where(t => t.Status == "Booked")
+                                          .Select(t => b.TripInfo?.TripName ?? "Chưa có"))
+                        .GroupBy(trip => trip)
+                        .Select(g2 => new { TripName = g2.Key, SoVe = g2.Count() })
+                        .OrderByDescending(x => x.SoVe)
+                        .ToList();
+
+                    var chuyenThuongXuyen = chiTietChuyen.FirstOrDefault()?.TripName ?? "";
+                    var soVeChuyen = chiTietChuyen.FirstOrDefault()?.SoVe ?? 0;
+
+                    // Vé hủy tổng (PaymentStatus = "Canceled")
+                    var huyVe = customerBills
+                        .Where(b => b.PaymentStatus == "Canceled")
+                        .SelectMany(b => b.ListItem
+                                          .Select(t => new HuyVe
+                                          {
+                                              TripName = b.TripInfo?.TripName ?? "Chưa có",
+                                              SoVe = 1,
+                                              CancelDate = b.CreateAt
+                                          }))
+                        .ToList();
+
+                    // Vé hủy trong tháng
+                    var huyVeTrongThang = huyVe
+                        .Where(h => h.CancelDate >= firstDayOfMonth)
+                        .GroupBy(h => h.TripName)
+                        .Select(g2 => new { TripName = g2.Key, SoVe = g2.Count() })
+                        .OrderByDescending(x => x.SoVe)
+                        .ToList();
+
+                    return new KhachHangThanThiet
+                    {
+                        CustomerID = g.Key,
+                        Name = g.First().Customer?.Name ?? "Chưa có",
+                        PhoneNum = g.First().Customer?.PhoneNum ?? "",
+                        TongTienDaChi = tongTien,
+                        SoLanMua = soLanMua,
+                        SoVeDaDat = soVeDaDat,
+                        DiemTichLuy = diem,
+                        PhanHang = phanHang,
+                        ChuyenThuongXuyen = chuyenThuongXuyen,
+                        SoVeChuyen = soVeChuyen,
+                        ChiTietChuyen = chiTietChuyen.Select(c => $"{c.TripName} ({c.SoVe} vé)").ToList(),
+                        HuyVe = huyVe,
+                        HuyVeTrongThang = huyVeTrongThang
+                            .Select(c => $"{c.TripName} ({c.SoVe} vé hủy)").ToList()
+                    };
+                })
+                .OrderByDescending(x => x.DiemTichLuy)
+                .ToList();
+
+            return khachHang;
+        }
+
+
+        public async Task<ActionResult> KhachHangThanThiet()
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["ShowLogin"] = true;
+                return RedirectToAction("Index", "Home");
+            }
+
+            var model = await GetThongKeKhachHang();
+            return View(model);
+        }
+
+
+
+
+
+
+
     }
 }

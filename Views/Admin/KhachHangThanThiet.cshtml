@@ -1,0 +1,265 @@
+﻿@model List<Ticket_Booking_System.Models.admin.KhachHangThanThiet>
+
+@{
+    ViewBag.Title = "Khách Hàng Thân Thiết";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+}
+
+<style>
+    .vip-table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    thead th {
+        background: #b3e5fc;
+        color: #000;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 12px 16px;
+        text-align: center;
+    }
+
+    tbody tr.main-row {
+        background: #f0f8ff;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        tbody tr.main-row:hover {
+            background: #a7d8f5;
+        }
+
+    tbody tr.detail-row {
+        background: #e6f3ff;
+        display: none;
+    }
+
+    td, th {
+        padding: 12px 16px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .rank-diamond {
+        color: #00bcd4;
+        font-weight: bold;
+    }
+
+    .rank-gold {
+        color: #e0c200;
+        font-weight: bold;
+    }
+
+    .rank-silver {
+        color: #7f7f7f;
+        font-weight: bold;
+    }
+
+    .nested-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+        .nested-table th, .nested-table td {
+            border: 1px solid #c0d6e4;
+            padding: 6px 8px;
+            font-size: 14px;
+        }
+
+        .nested-table th {
+            background-color: #d0efff;
+            font-weight: 600;
+        }
+
+    .table-title {
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .text-red {
+        color: red;
+        font-weight: bold;
+    }
+</style>
+
+<h2 class="table-title">Danh Sách Khách Hàng Thân Thiết</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <p class="text-center">Chưa có dữ liệu khách hàng thân thiết.</p>
+}
+else
+{
+    <table class="vip-table">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Mã KH</th>
+                <th>Tên</th>
+                <th>SĐT</th>
+                <th class="text-right">Tổng tiền</th>
+                <th>Số lần mua</th>
+                <th>Số vé thành công</th>
+                <th>Điểm</th>
+                <th>Hạng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int stt = 1;
+            }
+            @foreach (var kh in Model)
+            {
+
+                int soLanMua = kh.SoLanMua + (kh.HuyVe?.Count ?? 0);
+
+                int tongSoVe = kh.SoVeDaDat;
+
+                string rankClass = kh.PhanHang == "Kim Cương" ? "rank-diamond"
+                                : kh.PhanHang == "Vàng" ? "rank-gold"
+                                : "rank-silver";
+
+                <tr class="main-row" onclick="toggleDetail(this)">
+                    <td>@stt</td>
+                    <td>@kh.CustomerID</td>
+                    <td class="text-left">@kh.Name</td>
+                    <td>@kh.PhoneNum</td>
+                    <td class="text-right">@String.Format("{0:N0}", kh.TongTienDaChi) ₫</td>
+                    <td>@soLanMua</td>
+                    <td>@tongSoVe</td>
+                    <td>@kh.DiemTichLuy</td>
+                    <td class="@rankClass">@kh.PhanHang</td>
+                </tr>
+
+                <tr class="detail-row">
+                    <td colspan="9" class="text-left">
+                        @{
+                            int tongVeHuy = kh.HuyVe?.Count ?? 0;
+                            int tongVeHuyTrongThang = kh.HuyVeTrongThang != null
+                                ? kh.HuyVeTrongThang.Sum(hvm =>
+                                    int.Parse(hvm.Split('(')[1].Replace("vé hủy)", "").Trim()))
+                                : 0;
+                        }
+
+                        <strong>Chi tiết chuyến đi: (tổng vé đã đặt: @tongSoVe)</strong>
+                        <table class="nested-table">
+                            <thead>
+                                <tr>
+                                    <th>Chuyến đi</th>
+                                    <th>Tổng vé</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var tripCounts = new Dictionary<string, int>();
+                                    foreach (var c in kh.ChiTietChuyen)
+                                    {
+                                        var parts = c.Split('(');
+                                        var tripName = parts[0].Trim();
+                                        int soVe = int.Parse(parts[1].Replace("vé)", "").Trim());
+
+                                        if (tripCounts.ContainsKey(tripName))
+                                        {
+                                            tripCounts[tripName] += soVe;
+                                        }
+                                        else
+                                        {
+                                            tripCounts[tripName] = soVe;
+                                        }
+                                    }
+
+                                    foreach (var trip in tripCounts)
+                                    {
+                                        <tr>
+                                            <td class="text-left">@trip.Key</td>
+                                            <td>@trip.Value</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+
+                        @* Vé đã hủy *@
+                        @if (kh.HuyVe != null && kh.HuyVe.Any())
+                        {
+                            <strong>Vé đã hủy: (@tongVeHuy vé)</strong>
+                            <table class="nested-table">
+                                <thead>
+                                    <tr>
+                                        <th>Chuyến đi</th>
+                                        <th>Số vé hủy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var tripsHuy = kh.HuyVe.Select(h => h.TripName).Distinct();
+                                        foreach (var trip in tripsHuy)
+                                        {
+                                            int soVeHuy = kh.HuyVe.Count(h => h.TripName == trip);
+                                            <tr>
+                                                <td class="text-left">@trip</td>
+                                                <td class="text-red">@soVeHuy</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        }
+
+                        @* Vé hủy trong tháng *@
+                        @if (kh.HuyVeTrongThang != null && kh.HuyVeTrongThang.Any())
+                        {
+                            <strong>Vé hủy trong tháng: (@tongVeHuyTrongThang vé)</strong>
+                            <table class="nested-table">
+                                <thead>
+                                    <tr>
+                                        <th>Chuyến đi</th>
+                                        <th>Số vé hủy trong tháng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (var hvm in kh.HuyVeTrongThang)
+                                        {
+                                            var parts = hvm.Split('(');
+                                            <tr>
+                                                <td class="text-left">@parts[0]</td>
+                                                <td class="text-red">@parts[1]</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </td>
+                </tr>
+                stt++;
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+    function toggleDetail(row) {
+        const nextRow = row.nextElementSibling;
+        if (nextRow && nextRow.classList.contains('detail-row')) {
+            nextRow.style.display = nextRow.style.display === 'table-row' ? 'none' : 'table-row';
+        }
+    }
+</script>

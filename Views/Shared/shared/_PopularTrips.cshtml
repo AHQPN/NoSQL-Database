@@ -1,0 +1,45 @@
+﻿@* Views/Shared/_PopularTrips.cshtml *@
+@model List<Ticket_Booking_System.Models.PopularRouteCardViewModel>
+
+<section class="popular-routes">
+    <div class="container">
+        <h2 class="title">TUYẾN PHỔ BIẾN</h2>
+        <p class="subtitle">Được khách hàng tin tưởng và lựa chọn</p>
+
+        <div class="routes-grid">
+            @foreach (var card in Model)
+            {
+                <div class="routes-card">
+                    <div class="header-image">
+                        <div class="overlay"></div>
+                        <div class="header-content">
+                            <p class="subtitle">Tuyến xe từ</p>
+                            <h2 class="title">@card.Departure</h2>
+                        </div>
+                    </div>
+
+                    <div class="routes-list">
+                        @foreach (var route in card.Routes)
+                        {
+                            @*<div class="route-item">*@
+                                <a class="route-item" href="@Url.Action("GFindTrip", "Trip", new {
+                                    FromCity = route.Departure,
+                                    ToCity = route.Destination,
+                                    txtDate = route.Date.ToString("yyyy-MM-dd"),
+                                    SoVe = 1 })">
+                                    <div class="info">
+                                        <h3>@route.Destination</h3>
+                                        <p>@route.Duration - @route.Date.ToString("dd/MM/yyyy")</p>
+                                    </div>
+                                    <div class="price">@route.Price.ToString("N0") đ</div>
+                                </a>
+                            @*</div>*@
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+

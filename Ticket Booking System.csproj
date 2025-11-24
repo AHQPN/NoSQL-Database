@@ -234,6 +234,7 @@
     <Compile Include="Infrastructure\JobScheduler.cs" />
     <Compile Include="Infrastructure\RedisManager.cs" />
     <Compile Include="Models\admin\ThongKe.cs" />
+    <Compile Include="Models\admin\KhachHangThanThiet.cs" />
     <Compile Include="Models\admin\ThongKeThuHang.cs" />
     <Compile Include="Models\Bill.cs" />
     <Compile Include="Models\BookingResultViewModel.cs" />
@@ -412,6 +413,14 @@
     <Content Include="Views\Shared\_Admin.cshtml" />
     <Content Include="Views\Admin\ThongKe.cshtml" />
     <Content Include="Views\Bill\LichSuVe.cshtml" />
+    <Content Include="Views\Admin\KhachHangThanThiet.cshtml" />
+    <Content Include="Views\Shared\shared\Blank.cshtml" />
+    <Content Include="Views\Shared\shared\Error.cshtml" />
+    <Content Include="Views\Shared\shared\_Admin.cshtml" />
+    <Content Include="Views\Shared\shared\_FindTrip.cshtml" />
+    <Content Include="Views\Shared\shared\_LayoutzKhach.cshtml" />
+    <Content Include="Views\Shared\shared\_Layout_NhanVien.cshtml" />
+    <Content Include="Views\Shared\shared\_PopularTrips.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
