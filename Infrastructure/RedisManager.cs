@@ -37,7 +37,6 @@ namespace Ticket_Booking_System.Infrastructure
 
         public static async Task<bool> ReleaseSeatsAsync(string tripId, IEnumerable<string> seats, string bookingId = null)
         {
-            // If bookingId supplied, ensure we only remove keys with that value (avoid removing other user's reservation)
             var tasks = new List<Task<bool>>();
             foreach (var seat in seats)
             {
@@ -48,7 +47,6 @@ namespace Ticket_Booking_System.Infrastructure
                 }
                 else
                 {
-                    // compare and delete using Lua for atomicity
                     var script = @"if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
                     tasks.Add(_db.ScriptEvaluateAsync(script, new RedisKey[] { key }, new RedisValue[] { bookingId })
                         .ContinueWith(t => (long)t.Result == 1));
@@ -63,7 +61,6 @@ namespace Ticket_Booking_System.Infrastructure
             var server = GetServer();
             if (server == null) return Enumerable.Empty<string>();
 
-            // WARNING: KEYS operation can be expensive in production with many keys. For demo it's acceptable. For production prefer indexing or a Redis Set per trip.
             var pattern = GetSeatKey(tripId, "*");
             var keys = server.Keys(pattern: pattern).ToArray();
             return keys.Select(k => ParseSeatFromKey(k)).Where(s => !string.IsNullOrEmpty(s));
