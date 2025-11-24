@@ -1,0 +1,289 @@
+﻿@model List<Ticket_Booking_System.Models.Trip>
+@{
+    ViewBag.Title = "Quản lý Chuyến đi";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .trip-card {
+        transition: all 0.3s;
+    }
+
+        .trip-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .filter-section {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .action-btn {
+        margin: 0 2px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-bus"></i> Quản lý Chuyến đi</h2>
+        <a href="@Url.Action("Create", "Trip")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm chuyến mới
+        </a>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="filter-section">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm mã, tên chuyến...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" id="filterFromDate" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" id="filterToDate" class="form-control">
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button class="btn btn-success" onclick="applyFilter()">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+                <button class="btn btn-secondary" onclick="resetFilter()">
+                    <i class="fas fa-redo"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Tổng chuyến</h5>
+                    <h2 id="totalTrips">@Model.Count</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Sắp khởi hành</h5>
+                    <h2 id="upcomingTrips">@Model.Count(t => t.DepartureTime > DateTime.Now && t.DepartureTime < DateTime.Now.AddDays(1))</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Đã khởi hành</h5>
+                    <h2 id="pastTrips">@Model.Count(t => t.DepartureTime <= DateTime.Now)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Ghế trống</h5>
+                    <h2 id="availableSeats">@Model.Sum(t => t.RemainingSeats)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng dữ liệu -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="tripsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mã chuyến</th>
+                            <th>Tên chuyến</th>
+                            <th>Lộ trình</th>
+                            <th>Thời gian khởi hành</th>
+                            <th>Thời gian đến</th>
+                            <th>Loại xe</th>
+                            <th>Giá vé</th>
+                            <th>Ghế trống/Tổng</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var trip in Model.OrderByDescending(t => t.DepartureTime))
+                        {
+                            var roadMap = trip.RoadMap != null && trip.RoadMap.Any()
+                                ? string.Join(" → ", trip.RoadMap.Select(r => r.City))
+                                : "Chưa có lộ trình";
+                            var totalSeats = trip.ListTicket?.Count ?? 0;
+                            var isPast = trip.DepartureTime < DateTime.Now;
+
+                            <tr class="trip-row"
+                                data-tripid="@trip.TripID"
+                                data-departure="@trip.DepartureTime.ToString("yyyy-MM-dd")">
+                                <td><strong>@trip.TripID</strong></td>
+                                <td>@trip.TripName</td>
+                                <td>
+                                    <small>@roadMap</small>
+                                </td>
+                                <td>@trip.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@trip.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <span class="badge bg-secondary">@trip.Vehicle.VehicleType</span>
+                                </td>
+                                <td><strong>@trip.Price.ToString("N0") đ</strong></td>
+                                <td>
+                                    <span class="badge @(trip.RemainingSeats > 0 ? "bg-success" : "bg-danger")">
+                                        @trip.RemainingSeats / @totalSeats
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Edit", "Trip", new { id = trip.TripID })"
+                                           class="btn btn-sm btn-warning action-btn"
+                                           title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (!isPast && trip.ListTicket.All(t => t.Status != "Booked"))
+                                        {
+                                            <button class="btn btn-sm btn-danger action-btn"
+                                                    onclick="deleteTrip('@trip.TripID')"
+                                                    title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-secondary action-btn"
+                                                    disabled
+                                                    title="Không thể xóa">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function applyFilter() {
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        const fromDate = $('#filterFromDate').val();
+        const toDate = $('#filterToDate').val();
+
+        $('#tripsTable tbody tr').each(function() {
+            const row = $(this);
+            const text = row.text().toLowerCase();
+            const rowDate = row.data('departure');
+
+            let show = true;
+
+            if (searchTerm && !text.includes(searchTerm)) {
+                show = false;
+            }
+
+            if (fromDate && rowDate < fromDate) {
+                show = false;
+            }
+
+            if (toDate && rowDate > toDate) {
+                show = false;
+            }
+
+            row.toggle(show);
+        });
+    }
+
+    function resetFilter() {
+        $('#searchInput').val('');
+        $('#filterFromDate').val('');
+        $('#filterToDate').val('');
+        $('#tripsTable tbody tr').show();
+    }
+
+    function deleteTrip(tripId) {
+        Swal.fire({
+            title: 'Xác nhận xóa?',
+            text: "Bạn có chắc muốn xóa chuyến đi này?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("Delete", "Trip")',
+                    type: 'POST',
+                    data: {
+                        id: tripId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Đã xóa!', response.message, 'success')
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Lỗi!', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Lỗi!', 'Không thể kết nối server', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    $('#searchInput').on('keyup', function(e) {
+        if (e.key === 'Enter') {
+            applyFilter();
+        }
+    });
+
+    $('.alert').delay(5000).fadeOut();
+</script>
+
+@Html.AntiForgeryToken()

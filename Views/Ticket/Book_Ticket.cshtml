@@ -29,22 +29,23 @@
 @functions {
     string GetSeatLabel(string prefix, int i)
     {
-        return $"{prefix}{i}";
+        return $"{prefix}{i.ToString("D2")}";
     }
 
     bool IsBooked(string seat, List<Ticket_Booking_System.Models.Ticket> tickets)
     {
+        if (tickets == null) return false;
         return tickets.Any(t => t.SeatNum == seat && t.Status == "Booked");
     }
 
     bool IsPending(string seat, List<Ticket_Booking_System.Models.Ticket> tickets)
     {
+        if (tickets == null) return false;
         return tickets.Any(t => t.SeatNum == seat && t.Status == "Pending");
     }
 }
 
 <div class="container mb-4 position-relative">
-    <!-- Toast thông báo -->
     <div id="mes" class="d-none position-fixed top-0 start-50 translate-middle-x mt-3 p-3 rounded-3 shadow"
          role="alert" aria-live="assertive" aria-atomic="true"
          style="z-index: 9999; min-width: 350px; text-align:center;">
@@ -53,14 +54,12 @@
 
     <div class="row justify-content-around ">
         <div class="col-lg-7 border-2">
-            <!-- Chọn vé -->
             <div class="bg-white rounded-4 gap-2 d-md-flex row">
                 @{
                     int capacity = Model.Vehicle.Capacity;
 
                     if (capacity == 40) // Xe limousine / giường nằm
                     {
-                        <!-- Tầng dưới -->
                         <div class="col-md-6 row">
                             <h6 class="text-center">Tầng Dưới</h6>
                             <div class="row gap-3 justify-content-between">
@@ -79,13 +78,13 @@
                             </div>
                         </div>
 
-                        <!-- Tầng trên -->
                         <div class="col-md-6 row">
                             <h6 class="text-center">Tầng Trên</h6>
                             <div class="row gap-3 justify-content-between">
-                                @for (int i = 1; i <= 20; i++)
+                                @* SỬA LẠI: Chạy từ 21 đến 40, dùng prefix "A" *@
+                                @for (int i = 21; i <= 40; i++)
                                 {
-                                    var seat = GetSeatLabel("B", i);
+                                    var seat = GetSeatLabel("A", i); // Kết quả sẽ là A21, A22...
                                     bool booked = IsBooked(seat, Model.ListTicket);
                                     bool pending = IsPending(seat, Model.ListTicket);
 
@@ -98,7 +97,7 @@
                             </div>
                         </div>
                     }
-                    else // sơ đồ xe ghế ngồi
+                    else // sơ đồ xe ghế ngồi thường (Giữ nguyên)
                     {
                         <div class="col-md-12">
                             <h6 class="text-center">Sơ đồ ghế</h6>
@@ -106,7 +105,6 @@
                                 @for (int row = 0; row < capacity / 4; row++)
                                 {
                                     <div class="d-flex justify-content-center gap-4">
-                                        <!-- Cột trái -->
                                         <div class="d-flex gap-3">
                                             @{
                                                 var seat1 = GetSeatLabel("A", row * 4 + 1);
@@ -128,7 +126,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Cột phải -->
                                         <div class="d-flex gap-3">
                                             @{
                                                 var seat3 = GetSeatLabel("A", row * 4 + 3);
@@ -156,7 +153,6 @@
                     }
                 }
 
-                <!-- Ghi chú -->
                 <div class="col-md-2 mt-4">
                     <div class="d-flex flex-md-column gap-2 justify-content-between">
                         <div class="d-flex align-items-center">
@@ -176,7 +172,6 @@
             </div>
 
 
-            <!-- Thông tin khách hàng -->
             <div class="bg-white row mt-2">
                 <div class="col-md-5 m-2">
                     <h5>Thông tin khách hàng</h5>
@@ -189,7 +184,7 @@
                                    @(ViewBag.userInfo != null ? "readonly" : "required") />
                         </div>
                         <div class="form-group">
-                            <label for="phone">Phone *</label>
+                            <label for="phone">Số điện thoại *</label>
                             <input type="text" class="form-control" id="phone"
                                    placeholder="Vui lòng nhập số điện thoại"
                                    value="@(ViewBag.userInfo != null ? ViewBag.userInfo.PhoneNum : "")"
@@ -210,7 +205,6 @@
             </div>
 
 
-            <!-- Đặt vé-->
             <div class="row bg-white mt-2 mb-2">
                 <div class="row m-2 ">
                     <h6 class="text-white rounded text-center"
@@ -219,7 +213,7 @@
                     </h6>
                 </div>
                 <div class="d-flex justify-content-between p-2">
-                    <h2 class="tongtien">0đ</h2>
+                    <h2 class="tongtien">0 ₫</h2>
                     <div class="d-flex gap-2">
 
                         <a class="btn" style="color: white;background-color: #f97019;width: 150px;"
@@ -231,7 +225,6 @@
             </div>
         </div>
 
-        <!-- Thông tin lượt đi -->
         <div class="col-lg-4 mb-2">
             <div class="row bg-white rounded-4">
                 <h5 class="row m-1">Thông tin lượt đi</h5>
@@ -247,7 +240,7 @@
                         </tr>
                         <tr>
                             <td>Số ghế</td>
-                            <td id="soghe"></td>
+                            <td id="soghe">...</td>
                         </tr>
                         <tr>
                             <td>Điểm trả khách</td>
@@ -255,7 +248,7 @@
                         </tr>
                         <tr>
                             <td>Tổng tiền lượt đi</td>
-                            <td class="tongtien">0đ</td>
+                            <td class="tongtien">0 ₫</td>
                         </tr>
                     </table>
                 </div>
@@ -266,15 +259,15 @@
                 <table class="table">
                     <tr>
                         <td>Giá vé lượt đi</td>
-                        <td>@Model.Price</td>
+                        <td>@String.Format("{0:0,0}", Model.Price) ₫</td>
                     </tr>
                     <tr>
                         <td>Phí thanh toán</td>
-                        <td>0đ</td>
+                        <td>0 ₫</td>
                     </tr>
                     <tr>
                         <td>Tổng tiền</td>
-                        <td class="tongtien">0đ</td>
+                        <td class="tongtien">0 ₫</td>
                     </tr>
                 </table>
             </div>
@@ -282,162 +275,79 @@
     </div>
 </div>
 
-@*<script>
+<script>
     let selectedSeats = [];
     let seatCount = 0;
     let ticketPrice = @Model.Price;
 
-    // Event delegation: click trên container
     document.addEventListener("click", function (e) {
         let el = e.target.closest(".ghe");
-        if (!el) return; // không click vào ghế thì bỏ qua
+        if (!el) return;
 
         let img = el.querySelector("img");
         let seat = el.querySelector("span").innerText;
 
-        if (img.alt === "seat_active" && seatCount < 5) {
+        if (img.alt === "seat_active") {
+            if (seatCount >= 5) {
+                alert("Bạn chỉ được chọn tối đa 5 ghế.");
+                return;
+            }
             img.src = '/Content/seat_selecting.svg';
             img.alt = 'seat_selecting';
             selectedSeats.push(seat);
             seatCount++;
-        } else if (img.alt === "seat_selecting") {
+        }
+        else if (img.alt === "seat_selecting") {
             selectedSeats = selectedSeats.filter(s => s !== seat);
             seatCount--;
             img.src = '/Content/seat_active.svg';
             img.alt = 'seat_active';
         }
 
-        // cập nhật số ghế
-        document.querySelector("#soghe").innerText = selectedSeats.join(',');
+        document.querySelector("#soghe").innerText = selectedSeats.join(', ');
 
-        // cập nhật tổng tiền
+        let totalMoney = ticketPrice * seatCount;
+        let formattedMoney = totalMoney.toLocaleString('vi-VN') + ' ₫';
+
         document.querySelectorAll(".tongtien").forEach(el => {
-            el.innerText = (ticketPrice * seatCount) + "đ";
-        });
-
-        document.querySelector("#booking").addEventListener("click", function (e) {
-            let fullname = document.querySelector("#fullname").value.trim();
-            let phone = document.querySelector("#phone").value.trim();
-
-            if (!fullname || !phone) {
-                e.preventDefault();
-                alert("Vui lòng đăng nhập hoặc điền đầy đủ thông tin khách hàng trước khi đặt vé.");
-                return;
-            }
-
-            if (!document.querySelector("#acceptPolicy").checked) {
-                e.preventDefault();
-                alert("Bạn cần chấp nhận điều khoản trước khi đặt vé.");
-                return;
-            }
-
-            const total = ticketPrice * selectedSeats.length;
-
-            const url = '@Url.Action("Handle_Book_Ticket","Ticket")'
-                + '?tripID=@Model.TripID'
-                + '&seats=' + encodeURIComponent(selectedSeats.join(','))
-                + '&fullname=' + encodeURIComponent(fullname)
-                + '&phone=' + encodeURIComponent(phone)
-                + '&total=' + total;
-
-            this.href = url;
+            el.innerText = formattedMoney;
         });
     });
-    </script>*@
 
-<script>
-let selectedSeats = [];
-let seatCount = 0;
-let ticketPrice = @Model.Price;
-
-// Click chọn ghế
-document.addEventListener("click", function (e) {
-    let el = e.target.closest(".ghe");
-    if (!el) return;
-
-    let img = el.querySelector("img");
-    let seat = el.querySelector("span").innerText.trim();
-
-    if (img.alt === "seat_active" && seatCount < 5) {
-        img.src = '/Content/seat_selecting.svg';
-        img.alt = 'seat_selecting';
-        selectedSeats.push(seat);
-        seatCount++;
-    }
-    else if (img.alt === "seat_selecting") {
-        selectedSeats = selectedSeats.filter(s => s !== seat);
-        seatCount--;
-        img.src = '/Content/seat_active.svg';
-        img.alt = 'seat_active';
-    }
-
-    document.querySelector("#soghe").innerText = selectedSeats.join(',');
-    document.querySelectorAll(".tongtien").forEach(el => {
-        el.innerText = (ticketPrice * seatCount) + "đ";
-    });
-});
-
-// Xử lý khi bấm nút Đặt vé
-document.querySelector("#booking").addEventListener("click", function (e) {
-    let fullname = document.querySelector("#fullname").value.trim();
-    let phone = document.querySelector("#phone").value.trim();
-
-    if (!fullname || !phone) {
+    document.querySelector("#booking").addEventListener("click", function (e) {
         e.preventDefault();
-        alert("Vui lòng điền thông tin.");
-        return;
-    }
 
-    if (!document.querySelector("#acceptPolicy").checked) {
-        e.preventDefault();
-        alert("Bạn cần chấp nhận điều khoản.");
-        return;
-    }
+        let fullname = document.querySelector("#fullname").value.trim();
+        let phone = document.querySelector("#phone").value.trim();
+        let isPolicyChecked = document.querySelector("#acceptPolicy").checked;
 
-    const total = ticketPrice * selectedSeats.length;
-
-    const url = '@Url.Action("Handle_Book_Ticket","Ticket")'
-        + '?tripID=@Model.TripID'
-        + '&seats=' + encodeURIComponent(selectedSeats.join(','))
-        + '&fullname=' + encodeURIComponent(fullname)
-        + '&phone=' + encodeURIComponent(phone)
-        + '&total=' + total;
-
-    this.href = url;
-});
-
-// ===============================
-// AUTO-SELECT GHẾ CŨ (MUA LẠI)
-// ===============================
-let oldSeats = "@(ViewBag.OldSeats ?? "")".split(",").filter(s => s !== "");
-
-window.addEventListener("load", () => {
-
-    oldSeats.forEach(seat => {
-        let seatEl = [...document.querySelectorAll(".ghe")]
-            .find(x => x.querySelector("span").innerText.trim() === seat);
-
-        if (seatEl) {
-            let img = seatEl.querySelector("img");
-
-            if (img.alt === "seat_active") { // còn trống
-                img.src = '/Content/seat_selecting.svg';
-                img.alt = 'seat_selecting';
-
-                if (!selectedSeats.includes(seat)) selectedSeats.push(seat);
-                seatCount++;
-            }
+        if (selectedSeats.length === 0) {
+            alert("Vui lòng chọn ít nhất 1 ghế.");
+            return;
         }
-    });
 
-    document.querySelector("#soghe").innerText = selectedSeats.join(',');
-    document.querySelectorAll(".tongtien").forEach(el => {
-        el.innerText = (ticketPrice * seatCount) + "đ";
+        if (!fullname || !phone) {
+            alert("Vui lòng điền đầy đủ thông tin khách hàng (Họ tên & SĐT).");
+            return;
+        }
+
+        if (!isPolicyChecked) {
+            alert("Bạn cần chấp nhận điều khoản trước khi đặt vé.");
+            return;
+        }
+
+        const total = ticketPrice * selectedSeats.length;
+
+        const url = '@Url.Action("Handle_Book_Ticket", "Ticket")'
+            + '?tripID=@Model.TripID'
+            + '&seats=' + encodeURIComponent(selectedSeats.join(','))
+            + '&fullname=' + encodeURIComponent(fullname)
+            + '&phone=' + encodeURIComponent(phone)
+            + '&total=' + total;
+
+        window.location.href = url;
     });
-});
 </script>
-
-
 
 @if (TempData["Message"] != null)
 {
@@ -450,13 +360,10 @@ window.addEventListener("load", () => {
         setTimeout(() => {
             mes.classList.remove('d-flex', 'bg-@type');
             mes.classList.add('d-none');
-        }, 2000);
+        }, 3000);
     </script>
 }
 
 @{
     TempData["Message"] = null;
 }
-
-
-

@@ -1,0 +1,445 @@
+﻿@model Ticket_Booking_System.Controllers.TripEditViewModel
+@{
+    ViewBag.Title = "Chỉnh sửa chuyến đi";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+
+    // Ép kiểu danh sách trạm để dùng trong vòng lặp khởi tạo JS
+    var allStations = ViewBag.Stations as List<Ticket_Booking_System.Models.Station>;
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .form-section {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        border-bottom: 2px solid #ffc107; /* Màu vàng cho Edit */
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .station-item {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+
+        .station-item:hover {
+            background: #e9ecef;
+        }
+
+    .selected-stations {
+        min-height: 100px;
+        border: 2px dashed #ffc107;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .selected-station-tag {
+        display: inline-block;
+        background: #ffc107;
+        color: #000;
+        padding: 5px 15px;
+        margin: 5px;
+        border-radius: 20px;
+        position: relative;
+        font-weight: 500;
+    }
+
+    .remove-station {
+        margin-left: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #dc3545;
+    }
+
+    .route-preview {
+        font-size: 18px;
+        font-weight: bold;
+        color: #28a745;
+        padding: 15px;
+        background: #d4edda;
+        border-radius: 8px;
+        text-align: center;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-edit"></i> Chỉnh sửa chuyến đi</h2>
+                <a href="@Url.Action("Index", "Trip")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <form method="post" id="tripForm">
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.TripID)
+
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-info-circle"></i> Thông tin chung</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mã chuyến đi</label>
+                                <input type="text" class="form-control" value="@Model.TripID" disabled readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-clock"></i> Thông tin thời gian</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="DepartureTime" class="form-label">
+                                    Thời gian khởi hành <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local"
+                                       class="form-control"
+                                       id="DepartureTime"
+                                       name="DepartureTime"
+                                       value="@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ArrivalTime" class="form-label">
+                                    Thời gian đến <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local"
+                                       class="form-control"
+                                       id="ArrivalTime"
+                                       name="ArrivalTime"
+                                       value="@Model.ArrivalTime.ToString("yyyy-MM-ddTHH:mm")"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div id="durationDisplay" class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Thời gian di chuyển: <strong id="durationText"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-bus"></i> Thông tin phương tiện</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="VehicleID" class="form-label">
+                                    Chọn xe <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="VehicleID" name="VehicleID" required>
+                                    <option value="">-- Chọn xe --</option>
+                                    @foreach (var vehicle in ViewBag.Vehicles as List<Ticket_Booking_System.Models.Vehicle>)
+                                    {
+                                        <option value="@vehicle.VehicleID"
+                                                data-type="@vehicle.VehicleType"
+                                                data-capacity="@vehicle.Capacity"
+                                                data-plate="@vehicle.LicensePlate"
+                                                @(Model.VehicleID == vehicle.VehicleID ? "selected" : "")>
+                                            @vehicle.LicensePlate - @vehicle.VehicleType (@vehicle.Capacity chỗ)
+                                        </option>
+                                    }
+                                </select>
+                                @if (TempData["Warning"] != null)
+                                {
+                                    <small class="text-muted fst-italic">Lưu ý: Nếu đã có vé đặt, việc đổi xe có thể bị hệ thống từ chối.</small>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="vehicleInfo" class="alert alert-secondary" style="display:none;">
+                                <strong>Thông tin xe:</strong><br>
+                                <span id="vehicleType"></span> - <span id="vehicleCapacity"></span> chỗ<br>
+                                Biển số: <span id="vehiclePlate"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-route"></i> Lộ trình</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Chọn điểm dừng
+                                <small class="text-muted">(Tìm kiếm để thêm)</small>
+                            </label>
+                            <div class="mb-3">
+                                <input type="text"
+                                       id="stationSearch"
+                                       class="form-control mb-2"
+                                       placeholder="Tìm kiếm bến xe...">
+                            </div>
+                            <div id="stationList" style="max-height: 400px; overflow-y: auto;">
+                                @foreach (var station in allStations)
+                                {
+                                    <div class="station-item"
+                                         data-id="@station.StationID"
+                                         data-city="@station.City"
+                                         data-name="@station.StationName"
+                                         onclick="addStation(this)">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <strong>@station.City</strong> - @station.StationName
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lộ trình hiện tại (Kéo thả hoặc xóa)</label>
+                            <div class="selected-stations" id="selectedStations">
+                            </div>
+                            <div id="routePreview" class="route-preview" style="display:none;"></div>
+
+                            <div id="stationIdsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-money-bill-wave"></i> Giá vé</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Price" class="form-label">
+                                    Giá vé (VNĐ) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="Price"
+                                       name="Price"
+                                       min="1000"
+                                       max="10000000"
+                                       step="1000"
+                                       value="@Model.Price"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="pricePreview" class="alert alert-success">
+                                <strong>Giá hiển thị:</strong> <span id="priceFormatted">@Model.Price.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-warning btn-lg px-5">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <a href="@Url.Action("Index", "Trip")" class="btn btn-secondary btn-lg px-5">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let selectedStations = [];
+
+    // 1. KHỞI TẠO DỮ LIỆU TỪ SERVER KHI TRANG LOAD
+    $(document).ready(function() {
+        // Khởi tạo lộ trình từ Model
+        @if (Model.StationIds != null && allStations != null)
+        {
+            foreach (var stationId in Model.StationIds)
+            {
+                var station = allStations.FirstOrDefault(s => s.StationID == stationId);
+                if (station != null)
+                {
+                    <text>
+                    selectedStations.push({
+                        id: "@station.StationID",
+                        city: "@station.City",
+                        name: "@station.StationName"
+                    });
+                    </text>
+                }
+            }
+        }
+
+        // Render lộ trình ban đầu
+        updateSelectedStations();
+
+        // Trigger tính thời gian ban đầu
+        updateDuration();
+
+        // Trigger hiển thị thông tin xe ban đầu
+        $('#VehicleID').trigger('change');
+    });
+
+    // 2. CÁC HÀM XỬ LÝ
+
+    function updateDuration() {
+        const departure = new Date($('#DepartureTime').val());
+        const arrival = new Date($('#ArrivalTime').val());
+
+        if (departure && arrival && arrival > departure) {
+            const diff = arrival - departure;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            $('#durationText').text(hours + ' giờ ' + minutes + ' phút');
+            $('#durationDisplay').show();
+
+            if (hours > 24) {
+                $('#durationDisplay').removeClass('alert-info').addClass('alert-warning');
+                if (!$('#durationText').html().includes('Quá 24 giờ')) {
+                    $('#durationText').append(' <i class="fas fa-exclamation-triangle"></i> Quá 24 giờ!');
+                }
+            } else {
+                $('#durationDisplay').removeClass('alert-warning').addClass('alert-info');
+            }
+        }
+    }
+
+    $('#DepartureTime, #ArrivalTime').on('change', function() {
+        updateDuration();
+    });
+
+    $('#VehicleID').on('change', function() {
+        const selected = $(this).find('option:selected');
+        if (selected.val()) {
+            $('#vehicleType').text(selected.data('type'));
+            $('#vehicleCapacity').text(selected.data('capacity'));
+            $('#vehiclePlate').text(selected.data('plate'));
+            $('#vehicleInfo').show();
+        } else {
+            $('#vehicleInfo').hide();
+        }
+    });
+
+    $('#Price').on('input', function() {
+        const price = parseInt($(this).val());
+        if (price) {
+            $('#priceFormatted').text(price.toLocaleString('vi-VN') + ' đ');
+            $('#pricePreview').show();
+        } else {
+            $('#pricePreview').hide();
+        }
+    });
+
+    $('#stationSearch').on('input', function() {
+        const search = $(this).val().toLowerCase();
+        $('.station-item').each(function() {
+            const text = $(this).text().toLowerCase();
+            $(this).toggle(text.includes(search));
+        });
+    });
+
+    function addStation(element) {
+        const id = $(element).data('id');
+        const city = $(element).data('city');
+        const name = $(element).data('name');
+
+        if (selectedStations.some(s => s.id === id)) {
+            alert('Bến xe này đã có trong lộ trình!');
+            return;
+        }
+
+        selectedStations.push({ id, city, name });
+        updateSelectedStations();
+    }
+
+    function removeStation(index) {
+        selectedStations.splice(index, 1);
+        updateSelectedStations();
+    }
+
+ 
+    function updateSelectedStations() {
+        const container = $('#selectedStations');
+        container.empty();
+
+        // Xóa input cũ
+        const hiddenInputContainer = $('#stationIdsContainer');
+        hiddenInputContainer.empty();
+
+        if (selectedStations.length === 0) {
+            container.html('<p class="text-muted text-center"><i class="fas fa-hand-pointer"></i> Nhấp vào bến xe bên trái để thêm vào lộ trình</p>');
+            $('#routePreview').hide();
+            return;
+        }
+
+        selectedStations.forEach((station, index) => {
+            // 1. Render giao diện
+            const tag = $('<div class="selected-station-tag"></div>');
+            tag.html(`
+                <i class="fas fa-${index === 0 ? 'flag-checkered' : (index === selectedStations.length - 1 ? 'flag' : 'map-marker-alt')}"></i>
+                ${station.city}
+                <span class="remove-station" onclick="removeStation(${index})">×</span>
+            `);
+            container.append(tag);
+
+            if (index < selectedStations.length - 1) {
+                container.append('<i class="fas fa-arrow-right mx-2"></i>');
+            }
+
+            // 2. Tạo input ẩn riêng biệt cho từng trạm để Controller nhận dạng List<string>
+            hiddenInputContainer.append(`<input type="hidden" name="StationIds" value="${station.id}" />`);
+        });
+
+        if (selectedStations.length >= 2) {
+            const routeText = selectedStations.map(s => s.city).join(' → ');
+            $('#routePreview').text(routeText).show();
+        } else {
+            $('#routePreview').hide();
+        }
+    }
+
+    $('#tripForm').on('submit', function(e) {
+        if (selectedStations.length < 2) {
+            e.preventDefault();
+            alert('Vui lòng chọn ít nhất 2 điểm cho lộ trình!');
+            return false;
+        }
+
+        const departure = new Date($('#DepartureTime').val());
+        const arrival = new Date($('#ArrivalTime').val());
+
+        if (arrival <= departure) {
+            e.preventDefault();
+            alert('Thời gian đến phải sau thời gian khởi hành!');
+            return false;
+        }
+
+        return true;
+    });
+</script>
