@@ -18,7 +18,6 @@ namespace Ticket_Booking_System.Controllers
         {
             _context = new MongoDbContext();
         }
-        // GET: Trip
         [ChildActionOnly]
         public ActionResult PopularTrip()
         {
@@ -30,7 +29,6 @@ namespace Ticket_Booking_System.Controllers
             ViewBag.Cities = cities;
 
             var groups = GetPopularTrips();
-            //return View(groups);
             return PartialView("~/Views/Shared/_PopularTrips.cshtml", groups);
         }
         [ChildActionOnly]
@@ -42,7 +40,6 @@ namespace Ticket_Booking_System.Controllers
                            .OrderBy(c => c)
                            .ToList();
             ViewBag.Cities = cities;
-            //return View(groups);
             return PartialView("~/Views/Shared/_SearchTrip.cshtml");
         }
         [HttpGet]
@@ -68,7 +65,7 @@ namespace Ticket_Booking_System.Controllers
 
             DateTime now = DateTime.Now;
 
-            // Sửa logic: Lấy toàn bộ trip trước, rồi filter trong code
+            
             var allTrips = _context.Trip.Find(_ => true).ToList();
 
             var query = allTrips.Where(t =>
@@ -163,7 +160,7 @@ namespace Ticket_Booking_System.Controllers
             return result;
         }
 
-        // GET: Trang quản lý chuyến đi
+      
         public async Task<ActionResult> Index()
         {
             if (Session["Role"]?.ToString() != "Admin")
@@ -173,7 +170,7 @@ namespace Ticket_Booking_System.Controllers
             return View(trips);
         }
 
-        // GET: Form thêm chuyến đi mới
+       
         public async Task<ActionResult> Create()
         {
             if (Session["Role"]?.ToString() != "Admin")
@@ -184,7 +181,6 @@ namespace Ticket_Booking_System.Controllers
             return View();
         }
 
-        // POST: Tạo chuyến đi mới
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(TripCreateViewModel model)
@@ -194,7 +190,6 @@ namespace Ticket_Booking_System.Controllers
 
             try
             {
-                // Debug: Kiểm tra dữ liệu nhận được
                 System.Diagnostics.Debug.WriteLine($"StationIds count: {model.StationIds?.Count ?? 0}");
                 if (model.StationIds != null)
                 {
@@ -204,7 +199,6 @@ namespace Ticket_Booking_System.Controllers
                     }
                 }
 
-                // Kiểm tra StationIds có null không
                 if (model.StationIds == null || model.StationIds.Count == 0)
                 {
                     TempData["Error"] = "Vui lòng chọn lộ trình (ít nhất 2 điểm)";
@@ -213,7 +207,6 @@ namespace Ticket_Booking_System.Controllers
                     return View(model);
                 }
 
-                // Validation
                 var validationResult = await ValidateTripData(model);
                 if (!validationResult.IsValid)
                 {
@@ -223,7 +216,6 @@ namespace Ticket_Booking_System.Controllers
                     return View(model);
                 }
 
-                // Lấy thông tin xe
                 var vehicle = await _context.Vehicle.Find(v => v.VehicleID == model.VehicleID).FirstOrDefaultAsync();
                 if (vehicle == null)
                 {
@@ -233,29 +225,22 @@ namespace Ticket_Booking_System.Controllers
                     return View(model);
                 }
 
-                // Tạo danh sách vé
+                
                 var tickets = new List<Ticket>();
                 int seatCount = vehicle.Capacity;
 
-                // Xác định prefix dựa trên loại xe
-                string[] prefixes = vehicle.Capacity == 40 ? new[] { "A", "B" } : new[] { "A" };
-                int seatsPerPrefix = vehicle.Capacity == 40 ? 20 : vehicle.Capacity;
-
-                foreach (var prefix in prefixes)
+                for (int i = 1; i <= vehicle.Capacity; i++)
                 {
-                    for (int i = 1; i <= seatsPerPrefix; i++)
+                    tickets.Add(new Ticket
                     {
-                        tickets.Add(new Ticket
-                        {
-                            TicketID = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(),
-                            SeatNum = $"{prefix}{i}",
-                            Status = "Available",
-                            Price = model.Price
-                        });
-                    }
-                }
+                        TicketID = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(),
 
-                // Lấy thông tin lộ trình
+                        SeatNum = $"A{i:00}",
+
+                        Status = "Available",
+                        Price = model.Price
+                    });
+                }
                 var roadMap = new List<Station>();
                 foreach (var stationId in model.StationIds)
                 {
@@ -264,7 +249,6 @@ namespace Ticket_Booking_System.Controllers
                         roadMap.Add(station);
                 }
 
-                // Kiểm tra lại sau khi query
                 if (roadMap.Count < 2)
                 {
                     TempData["Error"] = "Không tìm thấy đủ thông tin bến xe. Vui lòng thử lại.";
@@ -273,10 +257,8 @@ namespace Ticket_Booking_System.Controllers
                     return View(model);
                 }
 
-                // Tạo tên chuyến tự động
                 string tripName = $"{roadMap.First().City} - {roadMap.Last().City}";
 
-                // Tạo trip mới
                 var trip = new Trip
                 {
                     TripID = GenerateTripID(),
@@ -308,7 +290,6 @@ namespace Ticket_Booking_System.Controllers
 
         private async Task<ValidationResult> ValidateTripData(dynamic model, string excludeTripId = null)
         {
-            // Kiểm tra thời gian
             if (model.DepartureTime <= DateTime.Now)
             {
                 return new ValidationResult { IsValid = false, Message = "Thời gian khởi hành phải sau thời điểm hiện tại" };
@@ -325,19 +306,16 @@ namespace Ticket_Booking_System.Controllers
                 return new ValidationResult { IsValid = false, Message = "Thời gian di chuyển không được vượt quá 24 giờ" };
             }
 
-            // Kiểm tra giá vé
             if (model.Price <= 0 || model.Price > 10000000)
             {
                 return new ValidationResult { IsValid = false, Message = "Giá vé không hợp lệ (0 - 10,000,000 VNĐ)" };
             }
 
-            // Kiểm tra lộ trình
             if (model.StationIds == null || model.StationIds.Count < 2)
             {
                 return new ValidationResult { IsValid = false, Message = "Lộ trình phải có ít nhất 2 điểm (điểm đi và điểm đến)" };
             }
 
-            // Kiểm tra trùng lặp trong lộ trình - SỬA LẠI ĐÂY
             var stationIdsList = model.StationIds as List<string>;
             if (stationIdsList != null)
             {
@@ -348,7 +326,6 @@ namespace Ticket_Booking_System.Controllers
                 }
             }
 
-            // Kiểm tra xe có sẵn sàng không (không bị trùng lịch)
             var vehicleConflict = await CheckVehicleAvailability(
                 model.VehicleID,
                 model.DepartureTime,
@@ -364,7 +341,6 @@ namespace Ticket_Booking_System.Controllers
             return new ValidationResult { IsValid = true };
         }
 
-        // GET: Form chỉnh sửa chuyến đi
         public async Task<ActionResult> Edit(string id)
         {
             if (Session["Role"]?.ToString() != "Admin")
@@ -390,7 +366,6 @@ namespace Ticket_Booking_System.Controllers
             return View(model);
         }
 
-        // POST: Cập nhật chuyến đi
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(TripEditViewModel model)
@@ -404,15 +379,12 @@ namespace Ticket_Booking_System.Controllers
                 if (trip == null)
                     return HttpNotFound();
 
-                // Kiểm tra nếu đã có vé được đặt, không cho thay đổi một số thông tin quan trọng
                 var bookedTickets = trip.ListTicket.Count(t => t.Status == "Booked");
                 if (bookedTickets > 0)
                 {
-                    // Chỉ cho phép thay đổi trạng thái và giá (với cảnh báo)
                     TempData["Warning"] = "Chuyến đi đã có vé được đặt. Một số thay đổi bị hạn chế.";
                 }
 
-                // Validation
                 var validationResult = await ValidateTripData(model, trip.TripID);
                 if (!validationResult.IsValid)
                 {
@@ -422,12 +394,10 @@ namespace Ticket_Booking_System.Controllers
                     return View(model);
                 }
 
-                // Cập nhật thông tin
                 var updateBuilder = Builders<Trip>.Update
                     .Set(t => t.DepartureTime, model.DepartureTime)
                     .Set(t => t.ArrivalTime, model.ArrivalTime)
                     .Set(t => t.Price, model.Price);
-                // Nếu chưa có vé đặt, cho phép đổi xe và lộ trình
                 if (bookedTickets == 0)
                 {
                     var vehicle = await _context.Vehicle.Find(v => v.VehicleID == model.VehicleID).FirstOrDefaultAsync();
@@ -467,7 +437,6 @@ namespace Ticket_Booking_System.Controllers
             }
         }
 
-        // POST: Xóa chuyến đi
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Delete(string id)
@@ -481,14 +450,12 @@ namespace Ticket_Booking_System.Controllers
                 if (trip == null)
                     return Json(new { success = false, message = "Không tìm thấy chuyến đi" });
 
-                // Kiểm tra xem có vé đã đặt không
                 var bookedTickets = trip.ListTicket.Count(t => t.Status == "Booked");
                 if (bookedTickets > 0)
                 {
                     return Json(new { success = false, message = "Không thể xóa chuyến đi đã có vé được đặt" });
                 }
 
-                // Kiểm tra xem thời gian khởi hành đã qua chưa
                 if (trip.DepartureTime < DateTime.Now)
                 {
                     return Json(new { success = false, message = "Không thể xóa chuyến đi đã khởi hành" });
@@ -506,7 +473,6 @@ namespace Ticket_Booking_System.Controllers
 
 
 
-        // Kiểm tra xe có bị trùng lịch không
         private async Task<VehicleAvailabilityResult> CheckVehicleAvailability(
             string vehicleId,
             DateTime departureTime,
@@ -516,17 +482,14 @@ namespace Ticket_Booking_System.Controllers
             var filter = Builders<Trip>.Filter.And(
                 Builders<Trip>.Filter.Eq(t => t.Vehicle.VehicleID, vehicleId),
                 Builders<Trip>.Filter.Or(
-                    // Chuyến mới bắt đầu trong khoảng thời gian của chuyến cũ
                     Builders<Trip>.Filter.And(
                         Builders<Trip>.Filter.Lte(t => t.DepartureTime, departureTime),
                         Builders<Trip>.Filter.Gte(t => t.ArrivalTime, departureTime)
                     ),
-                    // Chuyến mới kết thúc trong khoảng thời gian của chuyến cũ
                     Builders<Trip>.Filter.And(
                         Builders<Trip>.Filter.Lte(t => t.DepartureTime, arrivalTime),
                         Builders<Trip>.Filter.Gte(t => t.ArrivalTime, arrivalTime)
                     ),
-                    // Chuyến mới bao trùm chuyến cũ
                     Builders<Trip>.Filter.And(
                         Builders<Trip>.Filter.Gte(t => t.DepartureTime, departureTime),
                         Builders<Trip>.Filter.Lte(t => t.ArrivalTime, arrivalTime)
@@ -536,7 +499,6 @@ namespace Ticket_Booking_System.Controllers
 
             var conflictingTrips = await _context.Trip.Find(filter).ToListAsync();
 
-            // Loại trừ chuyến đang edit
             if (!string.IsNullOrEmpty(excludeTripId))
             {
                 conflictingTrips = conflictingTrips.Where(t => t.TripID != excludeTripId).ToList();
@@ -555,13 +517,11 @@ namespace Ticket_Booking_System.Controllers
             return new VehicleAvailabilityResult { IsAvailable = true };
         }
 
-        // Generate TripID
         private string GenerateTripID()
         {
             return "TRIP" + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
-        // Helper classes
         public class ValidationResult
         {
             public bool IsValid { get; set; }
@@ -575,7 +535,6 @@ namespace Ticket_Booking_System.Controllers
         }
     }
 
-    // ViewModels
     public class TripCreateViewModel
     {
         public DateTime DepartureTime { get; set; }

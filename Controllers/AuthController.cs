@@ -106,6 +106,7 @@ namespace Ticket_Booking_System.Controllers
             usr.Address = a["Address"];
             usr.Password = a["pw"];
             usr.Role = "Customer";
+            usr.Status = "Active";
             var existingUser = _users.FirstOrDefault(u => u.PhoneNum == usr.PhoneNum);
             if (string.IsNullOrEmpty(usr.Name) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Password) || string.IsNullOrEmpty(usr.PhoneNum) || string.IsNullOrEmpty(usr.Address))
             {
@@ -113,7 +114,7 @@ namespace Ticket_Booking_System.Controllers
             }
             else if (existingUser != null)
             {
-                return ErrorRegister("Email này đã được đăng ký trước đó.", usr);
+                return ErrorRegister("Số điện thoại  này đã được đăng ký trước đó.", usr);
             }
             if (a["pw"] != a["confrimed-pw"])
             {

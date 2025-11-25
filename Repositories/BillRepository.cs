@@ -31,16 +31,14 @@ namespace Ticket_Booking_System.Repositories
             return await _bills.Find(b => b.Customer.CustomerID == customerId).ToListAsync();
         }
 
-        public async Task<Bill> GetByBookingIdAsync(string bookingId)
-        {
-            return await _bills.Find(b => b.BookingID == bookingId).FirstOrDefaultAsync();
-        }
 
         public async Task UpdateAsync(Bill bill)
         {
             var filter = Builders<Bill>.Filter.Eq(b => b.BillID, bill.BillID);
             await _bills.ReplaceOneAsync(filter, bill);
         }
+
+
 
     }
 }

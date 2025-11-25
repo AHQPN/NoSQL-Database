@@ -13,7 +13,6 @@ namespace Ticket_Booking_System.Controllers
 {
     public class BillController : Controller
     {
-        // GET: Bill
         private readonly MongoDbContext _dbContext;
         public BillController()
         {
@@ -31,7 +30,6 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("Index", "Home");
             }
             var userId = Session["UserID"].ToString();
-            // Lọc các hóa đơn của user này
             var filter = Builders<Bill>.Filter.Eq(b => b.Customer.CustomerID, userId);
             var bills = await _dbContext.Bill
          .Find(b => b.Customer.CustomerID == userId)
@@ -115,7 +113,6 @@ namespace Ticket_Booking_System.Controllers
                 .Find(b => b.Customer.CustomerID == userId)
                 .ToListAsync();
 
-            // Map sang TicketHistoryViewModel
             var history = bills.Select(b => new TicketHistoryViewModel
             {
                 BillID = b.BillID,
@@ -125,7 +122,6 @@ namespace Ticket_Booking_System.Controllers
                 Tickets = b.ListItem,
                 TripInfo = b.TripInfo,
                 TripID = b.TripInfo?.TripID,
-                Status = b.Status,
                 PaymentStatus = b.PaymentStatus
 
             }).ToList();
@@ -152,7 +148,6 @@ namespace Ticket_Booking_System.Controllers
 
             string tripID = bill.TripInfo.TripID;
 
-            // Lấy chuyến hiện tại
             var trip = await db.Trip.Find(t => t.TripID == tripID).FirstOrDefaultAsync();
             if (trip == null || trip.DepartureTime < DateTime.Now)
             {
@@ -160,13 +155,10 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("LichSuVe");
             }
 
-            // Lấy danh sách ghế cũ từ Bill
             string oldSeats = string.Join(",", bill.ListItem.Select(i => i.SeatNum));
 
             return RedirectToAction("Book_Ticket", "Ticket", new { tripID = tripID, oldSeats = oldSeats });
         }
-       
-
 
 
 

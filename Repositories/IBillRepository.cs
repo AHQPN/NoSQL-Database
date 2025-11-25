@@ -10,7 +10,7 @@ namespace Ticket_Booking_System.Repositories
         Task CreateAsync(Bill bill);
         Task<Bill> GetByIdAsync(string billID);
         Task<List<Bill>> GetByCustomerIdAsync(string customerId);
-        Task<Bill> GetByBookingIdAsync(string bookingId);
+        //Task<Bill> GetByBookingIdAsync(string bookingId);
         Task UpdateAsync(Bill bill);
     }
 }

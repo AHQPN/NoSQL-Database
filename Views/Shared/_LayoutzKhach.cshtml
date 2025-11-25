@@ -228,7 +228,15 @@
                 <span class="form-message"></span>
             </div>
             <div class="my-3 form-group">
-                <input name="numberphone" type="tel" class="form-control" id="Phone-number" placeholder="Số điện thoại">
+                <input name="numberphone"
+                       type="tel"
+                       class="form-control"
+                       id="Phone-number"
+                       placeholder="Số điện thoại"
+                       pattern="[0-9]{10}"
+                       maxlength="10"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <span class="form-message"></span>
                 <span class="form-message"></span>
             </div>
             <div class="my-3 form-group">

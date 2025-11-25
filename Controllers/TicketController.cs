@@ -17,11 +17,9 @@ namespace Ticket_Booking_System.Controllers
     public class TicketController : Controller
     {
         private const int PendingTtl = 900;
-        // GET: Ticket
         private readonly IUserRepository _userRepository;
         private readonly ITripRepository _tripRepository;
         private readonly IBillRepository _billRepository;
-        //private readonly IVehicleRepository _vehicleRepository;
         public TicketController()
         {
             var dbContext = new MongoDbContext();
@@ -76,20 +74,16 @@ namespace Ticket_Booking_System.Controllers
         {
             TempData.Clear();
 
-            // Giải phóng ghế Pending hết hạn
             await _tripRepository.ReleaseExpiredPendingSeatsAsync(tripID);
 
-            // Lấy thông tin chuyến đi và user
             var trip = await _tripRepository.GetByIdAsync(tripID);
             string customerID = Session["UserID"] as string;
             var user = await _userRepository.GetByIdAsync(customerID);
             ViewBag.userInfo = user;
 
-            // Lấy danh sách ghế đang được giữ trong Redis
             var reserved = await RedisManager.GetReservedSeatsAsync(tripID);
             ViewBag.RedisReservedSeats = reserved;
 
-            // --- Xử lý ghế cũ ---
             List<string> availableOldSeats = new List<string>();
             List<string> failedOldSeats = new List<string>();
 
@@ -101,7 +95,6 @@ namespace Ticket_Booking_System.Controllers
                 {
                     var ticket = trip.ListTicket.FirstOrDefault(t => t.SeatNum == seat);
 
-                    // Ghế còn trống → thêm vào available
                     if (ticket != null && ticket.Status == "Available")
                         availableOldSeats.Add(seat);
                     else
@@ -109,11 +102,9 @@ namespace Ticket_Booking_System.Controllers
                 }
             }
 
-            // Gửi lên view
             ViewBag.AvailableOldSeats = availableOldSeats;
             ViewBag.FailedOldSeats = failedOldSeats;
 
-            // Quan trọng: để JS tự chọn ghế cũ
             ViewBag.OldSeats = string.Join(",", availableOldSeats);
 
             return View(trip);
@@ -187,6 +178,31 @@ namespace Ticket_Booking_System.Controllers
 
             return View("~/Views/Pay/ThanhToan.cshtml");
         }
+        private async Task<string> GenerateBillIDAsync()
+        {
+            var now = DateTime.UtcNow.AddHours(7);
+
+            string prefix = "BILL" + now.ToString("yyMMddHHmm");
+
+            var allBills = await _billRepository.GetByCustomerIdAsync(""); 
+
+            var lastBill = allBills
+                .Where(b => b.BillID.StartsWith(prefix))
+                .OrderByDescending(b => b.BillID)
+                .FirstOrDefault();
+
+            int nextSeq = 1;
+            if (lastBill != null)
+            {
+                string lastSeqStr = lastBill.BillID.Substring(lastBill.BillID.Length - 5);
+                if (int.TryParse(lastSeqStr, out int lastSeq))
+                    nextSeq = lastSeq + 1;
+            }
+
+            return prefix + nextSeq.ToString("D5");
+        }
+
+
 
         // Xác nhận thanh toán
         [HttpPost]
@@ -216,10 +232,11 @@ namespace Ticket_Booking_System.Controllers
             var userID = Session["UserID"] as string;
             var user = !string.IsNullOrEmpty(userID) ? await _userRepository.GetByIdAsync(userID) : null;
 
+            string billID = await GenerateBillIDAsync();
+
             var bill = new Bill
             {
-                BillID = "BILL" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper(),
-
+                BillID = billID,
                 CreateAt = DateTime.UtcNow.AddHours(7),
                 Quantity = seatList.Count,
                 Total = seatList.Count * trip.Price,
@@ -300,7 +317,6 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Lấy hóa đơn
             var bill = await _billRepository.GetByIdAsync(billID);
             if (bill == null)
             {
@@ -308,7 +324,6 @@ namespace Ticket_Booking_System.Controllers
                 return RedirectToAction("LichSuVe", "Bill");
             }
 
-            // Kiểm tra trạng thái
             if (bill.PaymentStatus == "Canceled")
             {
                 TempData["message"] = "Vé này đã được hủy trước đó!";
@@ -317,7 +332,6 @@ namespace Ticket_Booking_System.Controllers
 
             bill.PaymentStatus = "Canceled";
 
-                // Cập nhật trong ListItem
             if (bill.ListItem != null && bill.ListItem.Count > 0)
             {
                 foreach (var item in bill.ListItem)
@@ -325,7 +339,6 @@ namespace Ticket_Booking_System.Controllers
                     item.Status = "Available"; 
                 }
 
-                // Cập nhật trạng thái ghế trong Trip
                 if (bill.TripInfo != null)
                 {
                     var seatNums = bill.ListItem.Select(i => i.SeatNum).ToList();
